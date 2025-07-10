@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReAct Agent Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 10px;
+        }
+        #new-chat-btn {
+            background-color: #3498db;
+            color: white;
+            border: 1px solid #3498db;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        #session-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        #session-list li {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #session-list li:hover, #session-list li.active {
+            background-color: #34495e;
+        }
+        .delete-session-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-right: 5px; }
+        button:hover { background-color: #2980b9; }
+        .button-danger { background-color: #e74c3c; }
+        .button-danger:hover { background-color: #c0392b; }
+        .button-success { background-color: #2ecc71; }
+        .button-success:hover { background-color: #27ae60; }
+        .loading { text-align: center; margin: 20px 0; display: none; }
+        .tabs { display: flex; margin-bottom: -1px; border-bottom: 1px solid #ddd; }
+        .tab { padding: 10px 15px; cursor: pointer; border: 1px solid transparent; border-bottom: none; }
+        .tab.active { background-color: white; border-color: #ddd; border-radius: 4px 4px 0 0; position: relative; z-index: 1;}
+        .tab-content { display: none; }
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .save-status { margin-top: 10px; font-size: 14px; display: none; padding: 10px; border-radius: 4px;}
+        .success { background-color: #e6ffe6; color: #27ae60; }
+        .error { background-color: #ffe6e6; color: #c0392b; }
+        .chat-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            min-height: 200px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        .user-message {
+            background-color: #3498db;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant-message {
+            background-color: #ecf0f1;
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        .assistant-message table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .assistant-message th, .assistant-message td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .assistant-message th {
+            background-color: #e0e0e0;
+            font-weight: 600;
+        }
+        .assistant-message tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .tool-calls { margin-top: 10px; font-size: 12px; font-family: monospace; background-color: #e0e0e0; padding: 8px; border-radius: 4px; }
+        
+        /* New styles for thought process visualization */
+        .thought-process {
+            padding: 15px;
+            margin: 10px 40px; /* Indent to show it's a sub-process */
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f7f9fa;
+        }
+        .thought-process summary {
+            cursor: pointer;
+            font-weight: 500;
+            color: #555;
+            list-style-type: '⚙️';
+            padding-left: 10px;
+        }
+        .thought-process[open] summary {
+            margin-bottom: 15px;
+        }
+        .thought-content {
+            margin-top: 10px;
+        }
+        .tool-call-step {
+            border-left: 3px solid #3498db;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .tool-call-header, .tool-result-header {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .tool-call-header strong {
+            font-family: monospace;
+            background-color: #eaf2f8;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid #d4e6f1;
+        }
+        .tool-call-args pre, .tool-result-content pre {
+            background-color: #2c3e50;
+            color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .tool-result-step {
+            margin-top: 10px;
+            padding-left: 15px;
+            border-left: 3px solid #2ecc71;
+        }
+
+        /* Styles for LLM thought process */
+        .llm-thought {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fdfaf2; /* Light yellow background */
+        }
+        .llm-thought summary {
+            cursor: pointer;
+            font-weight: 500;
+            color: #6d5b0c;
+            list-style-type: '💡';
+            padding-left: 10px;
+        }
+        .llm-thought .thought-content {
+            padding: 10px;
+            margin-top: 5px;
+            font-style: italic;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        /* Styles for Vision Report */
+        .vision-report {
+            padding: 15px;
+            margin: 10px 40px;
+            border: 1px solid #d4e6f1;
+            border-radius: 8px;
+            background-color: #eaf2f8;
+        }
+        .vision-report summary {
+            cursor: pointer;
+            font-weight: 500;
+            color: #2980b9;
+            list-style-type: '🖼️';
+            padding-left: 10px;
+        }
+        .vision-report .report-content {
+            padding: 10px;
+            margin-top: 5px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background-color: #fbfdff;
+            border-radius: 4px;
+            color: #333;
+        }
+
+        #query-form { margin-top: auto; }
+        #image-preview-container {
+            margin-top: 10px;
+            position: relative;
+            display: none;
+        }
+        #image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        #remove-image-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Sessions</h2>
+        <button id="new-chat-btn">New Chat</button>
+        <ul id="session-list"></ul>
+    </div>
+
+    <div class="main-content">
+        <h1>ReAct Agent Demo</h1>
+    
+        <div class="tabs">
+            <div class="tab active" data-tab="chat">Chat</div>
+            <div class="tab" data-tab="prompts">System Prompts</div>
+            <div class="tab" data-tab="tools">Tool Descriptions</div>
+        </div>
+        
+        <!-- Chat Tab -->
+        <div class="tab-content active" id="chat">
+            <div class="container" style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div class="chat-history" id="chat-history">
+                    <!-- Messages will be rendered here -->
+                </div>
+                <div class="loading">
+                    <p>Thinking...</p>
+                </div>
+                <div id="query-form">
+                    <div class="form-group">
+                        <label for="model">Select Model:</label>
+                        <select id="model">
+                            <option value="ollama/qwen3:30b-a3b">Qwen3 30B</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="query">Enter Your Query:</label>
+                        <textarea id="query" rows="3" placeholder="E.g., 'What is the price of wood?'"></textarea>
+                    </div>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    <button id="upload-btn">Upload Image</button>
+                    <button id="submit-btn">Submit</button>
+                    <div id="image-preview-container">
+                        <img id="image-preview" src="" alt="Image preview">
+                        <button id="remove-image-btn">&times;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Prompts Tab -->
+        <div class="tab-content" id="prompts">
+             <div class="container">
+                <h2>Custom System Prompt</h2>
+                <div class="form-group">
+                    <label for="system-prompt">System Prompt:</label>
+                    <textarea id="system-prompt" rows="15"></textarea>
+                </div>
+                <button id="save-prompt-btn" class="button-success">Save Changes</button>
+                <button id="reset-prompt-btn" class="button-danger">Reset to Default</button>
+                <div class="save-status" id="prompt-save-status"></div>
+            </div>
+        </div>
+        
+        <!-- Tool Descriptions Tab -->
+        <div class="tab-content" id="tools">
+            <div class="container">
+                <h2>Tool Descriptions</h2>
+                <div id="tool-descriptions-container"></div>
+                <button id="save-tools-btn" class="button-success">Save Changes</button>
+                <button id="reset-tools-btn" class="button-danger">Reset to Default</button>
+                <div class="save-status" id="tools-save-status"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentConversationId = null;
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessions();
+            loadModels();
+            loadSystemPrompt();
+            loadToolDescriptions();
+        });
+
+        document.getElementById('new-chat-btn').addEventListener('click', newChat);
+        document.getElementById('submit-btn').addEventListener('click', submitQuery);
+        document.getElementById('query').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                submitQuery();
+            }
+        });
+
+        // Image upload functionality
+        document.getElementById('upload-btn').addEventListener('click', () => {
+            document.getElementById('image-upload').click();
+        });
+
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview-container').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('remove-image-btn').addEventListener('click', () => {
+            document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview-container').style.display = 'none';
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+            });
+        });
+
+        // Prompt & Tool Listeners
+        document.getElementById('save-prompt-btn').addEventListener('click', () => saveSystemPrompt());
+        document.getElementById('reset-prompt-btn').addEventListener('click', () => saveSystemPrompt(true));
+        document.getElementById('save-tools-btn').addEventListener('click', () => saveToolDescriptions());
+        document.getElementById('reset-tools-btn').addEventListener('click', () => saveToolDescriptions(true));
+
+
+        // --- API Functions ---
+        function loadModels() {
+            fetch('/api/models')
+                .then(response => response.json())
+                .then(models => {
+                    const modelSelect = document.getElementById('model');
+                    modelSelect.innerHTML = '';
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.name;
+                        modelSelect.appendChild(option);
+                    });
+                }).catch(error => console.error('Error loading models:', error));
+        }
+
+        function loadSessions() {
+            fetch('/api/sessions')
+                .then(response => response.json())
+                .then(sessionIds => {
+                    const sessionList = document.getElementById('session-list');
+                    sessionList.innerHTML = '';
+                    sessionIds.forEach(id => {
+                        const li = document.createElement('li');
+                        li.textContent = `Session ${id.substring(0, 8)}...`;
+                        li.dataset.sessionId = id;
+                        if (id === currentConversationId) {
+                            li.classList.add('active');
+                        }
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '&times;';
+                        deleteBtn.className = 'delete-session-btn';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            deleteSession(id);
+                        };
+
+                        li.appendChild(deleteBtn);
+                        li.onclick = () => loadSessionHistory(id);
+                        sessionList.appendChild(li);
+                    });
+                }).catch(error => console.error('Error loading sessions:', error));
+        }
+        
+        function loadSessionHistory(sessionId) {
+            fetch(`/api/sessions/${sessionId}`)
+                .then(response => response.json())
+                .then(history => {
+                    currentConversationId = sessionId;
+                    renderChatHistory(history);
+                    document.querySelectorAll('#session-list li').forEach(li => {
+                        li.classList.toggle('active', li.dataset.sessionId === sessionId);
+                    });
+                }).catch(error => console.error('Error loading session history:', error));
+        }
+
+        function deleteSession(sessionId) {
+            if (confirm(`Are you sure you want to delete session ${sessionId.substring(0,8)}?`)) {
+                fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
+                    .then(() => {
+                        if (currentConversationId === sessionId) {
+                            newChat();
+                        }
+                        loadSessions();
+                    }).catch(error => console.error('Error deleting session:', error));
+            }
+        }
+
+        function submitQuery() {
+            const queryInput = document.getElementById('query');
+            const query = queryInput.value.trim();
+            const imageInput = document.getElementById('image-upload');
+            const imageFile = imageInput.files[0];
+
+            if (!query && !imageFile) {
+                 alert("Please enter a query or upload an image.");
+                 return;
+            }
+
+            const model = document.getElementById('model').value;
+            const loadingIndicator = document.querySelector('.loading');
+            const submitButton = document.getElementById('submit-btn');
+            const chatHistoryContainer = document.getElementById('chat-history');
+
+            loadingIndicator.style.display = 'block';
+            submitButton.disabled = true;
+
+            // Optimistically add user message to UI
+            appendStandardMessage({ type: 'human', content: query, image: imageFile ? URL.createObjectURL(imageFile) : null }, chatHistoryContainer);
+            chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+
+            const formData = new FormData();
+            formData.append('query', query);
+            formData.append('model', model);
+            if (currentConversationId) {
+                formData.append('conversation_id', currentConversationId);
+            }
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            fetch('/api/query', {
+                method: 'POST',
+                body: formData // No Content-Type header needed, browser sets it for FormData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    appendStandardMessage({ type: 'ai', content: `Error: ${data.error}` }, chatHistoryContainer);
+                } else {
+                    currentConversationId = data.conversation_id;
+                    renderChatHistory(data.history);
+                    loadSessions(); // Refresh session list
+                    // Clear image only on success
+                    document.getElementById('remove-image-btn').click();
+                }
+            })
+            .catch(error => {
+                appendStandardMessage({ type: 'ai', content: `Network Error: ${error.message}` }, chatHistoryContainer);
+            })
+            .finally(() => {
+                loadingIndicator.style.display = 'none';
+                submitButton.disabled = false;
+                queryInput.value = '';
+                document.getElementById('image-upload').value = '';
+                queryInput.focus();
+            });
+        }
+        
+        // --- UI Rendering ---
+        function newChat() {
+            currentConversationId = null;
+            document.getElementById('chat-history').innerHTML = '';
+            document.querySelectorAll('#session-list li').forEach(li => li.classList.remove('active'));
+        }
+
+        function renderChatHistory(history) {
+            const chatHistoryContainer = document.getElementById('chat-history');
+            chatHistoryContainer.innerHTML = '';
+            
+            let i = 0;
+            while (i < history.length) {
+                const message = history[i];
+
+                // Group 1: Tool Usage
+                if (message.type === 'ai' && message.tool_calls && message.tool_calls.length > 0) {
+                    const group = { thought: message, results: [] };
+                    i++; // Move to the next message
+                    const toolCallIds = new Set(group.thought.tool_calls.map(tc => tc.id));
+                    while (i < history.length && history[i].type === 'tool' && toolCallIds.has(history[i].tool_call_id)) {
+                        group.results.push(history[i]);
+                        i++;
+                    }
+                    appendThoughtGroup(group, chatHistoryContainer);
+                
+                // Group 2: Vision Report (from a SystemMessage)
+                } else if (message.type === 'system' && message.content.includes('[IMAGE REPORT]:')) {
+                    appendReportBubble(message.content, chatHistoryContainer);
+                    i++;
+
+                // Default: Standard message
+                } else {
+                    appendStandardMessage(message, chatHistoryContainer);
+                    i++;
+                }
+            }
+            chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+        }
+
+        function appendStandardMessage(message, container) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message';
+            
+            if (message.type === 'human') {
+                msgDiv.classList.add('user-message');
+            } else {
+                msgDiv.classList.add('assistant-message');
+            }
+            
+            let finalContent = message.content || "";
+
+            // Check for <think> tags in AI messages and render them separately
+            if (message.type === 'ai') {
+                const thinkRegex = /<think>([\s\S]*?)<\/think>/;
+                const match = finalContent.match(thinkRegex);
+
+                if (match) {
+                    const thoughtText = match[1].trim();
+                    finalContent = finalContent.replace(thinkRegex, '').trim();
+
+                    // Create and append the thought bubble inside the message div
+                    const thoughtBubble = createThoughtBubble(thoughtText);
+                    msgDiv.appendChild(thoughtBubble);
+                }
+            }
+            
+            const contentDiv = document.createElement('div');
+            // Parse content as markdown and render as HTML
+            contentDiv.innerHTML = marked.parse(finalContent);
+            msgDiv.appendChild(contentDiv);
+
+            let imageUrl = message.image; // For optimistic display
+            if (!imageUrl && message.content_parts) {
+                 const imagePart = message.content_parts.find(p => p.type === 'image_url');
+                 if (imagePart) {
+                     imageUrl = imagePart.image_url.url;
+                 }
+            }
+            if (imageUrl) {
+                 const imgElement = document.createElement('img');
+                 imgElement.src = imageUrl;
+                 msgDiv.appendChild(imgElement);
+            }
+            
+            container.appendChild(msgDiv);
+        }
+
+        function createThoughtBubble(thoughtText) {
+            const details = document.createElement('details');
+            details.className = 'llm-thought';
+            
+            const summary = document.createElement('summary');
+            summary.innerHTML = '<strong>Assistant\'s Thought Process</strong>';
+            details.appendChild(summary);
+
+            const thoughtContent = document.createElement('div');
+            thoughtContent.className = 'thought-content';
+            thoughtContent.textContent = thoughtText;
+            details.appendChild(thoughtContent);
+            
+            return details;
+        }
+
+        function appendReportBubble(reportContent, container) {
+            const details = document.createElement('details');
+            details.className = 'vision-report';
+            details.open = true; // Open by default
+
+            const summary = document.createElement('summary');
+            summary.innerHTML = '<strong>Gemini Report</strong>';
+            details.appendChild(summary);
+
+            // Clean up the title from the content for display
+            const cleanContent = reportContent.replace('--- GEMINI REPORT ---\n', '');
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'report-content';
+            contentDiv.textContent = cleanContent;
+            details.appendChild(contentDiv);
+
+            container.appendChild(details);
+        }
+
+        function appendThoughtGroup(group, container) {
+            const details = document.createElement('details');
+            details.className = 'thought-process';
+            details.open = true;
+
+            const summary = document.createElement('summary');
+            summary.innerHTML = '<strong>Assistant is using tools...</strong>';
+            details.appendChild(summary);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'thought-content';
+
+            group.thought.tool_calls.forEach(call => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'tool-call-step';
+                
+                let callHTML = `
+                    <div class="tool-call-header">
+                        Calling tool: <strong>${call.name}</strong>
+                    </div>
+                    <div class="tool-call-args"><pre>${JSON.stringify(call.args, null, 2)}</pre></div>`;
+                
+                const result = group.results.find(r => r.tool_call_id === call.id);
+                if (result) {
+                    const resultPre = document.createElement('pre');
+                    resultPre.textContent = result.content;
+
+                    callHTML += `
+                        <div class="tool-result-step">
+                            <div class="tool-result-header">Tool Output</div>
+                            <div class="tool-result-content">${resultPre.outerHTML}</div>
+                        </div>`;
+                }
+                stepDiv.innerHTML = callHTML;
+                contentDiv.appendChild(stepDiv);
+            });
+            
+            details.appendChild(contentDiv);
+            container.appendChild(details);
+        }
+
+        function appendMessage(message, container = document.getElementById('chat-history')) {
+            // This function is deprecated and replaced by the new rendering logic.
+            // Kept for safety, but should not be called.
+            console.warn("appendMessage is deprecated.");
+            appendStandardMessage(message, container);
+        }
+
+        // --- Prompt and Tool Functions ---
+        function loadSystemPrompt() {
+             fetch('/api/system-prompt').then(r => r.json()).then(d => {
+                document.getElementById('system-prompt').value = d.system_prompt;
+             });
+        }
+        function saveSystemPrompt(reset = false) {
+             const body = reset ? { reset: true } : { system_prompt: document.getElementById('system-prompt').value };
+             fetch('/api/system-prompt', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(body)
+             }).then(r => r.json()).then(d => {
+                 if (!reset) document.getElementById('system-prompt').value = d.system_prompt;
+                 showStatusMessage('prompt-save-status', d.message, 'success');
+                 if (reset) loadSystemPrompt();
+             }).catch(e => showStatusMessage('prompt-save-status', `Error: ${e.message}`, 'error'));
+        }
+        function loadToolDescriptions() {
+            fetch('/api/tool-descriptions').then(r => r.json()).then(d => {
+                const container = document.getElementById('tool-descriptions-container');
+                container.innerHTML = '';
+                Object.entries(d.tool_descriptions).forEach(([name, desc]) => {
+                    container.innerHTML += `
+                        <div class="form-group">
+                            <label for="tool-${name}">${name}</label>
+                            <textarea id="tool-${name}" data-tool="${name}" rows="4">${desc}</textarea>
+                        </div>
+                    `;
+                });
+            });
+        }
+        function saveToolDescriptions(reset = false) {
+            const descriptions = {};
+            if (!reset) {
+                document.querySelectorAll('#tool-descriptions-container textarea').forEach(t => {
+                    descriptions[t.dataset.tool] = t.value;
+                });
+            }
+            const body = reset ? { reset: true } : { tool_descriptions: descriptions };
+            fetch('/api/tool-descriptions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(r => r.json()).then(d => {
+                showStatusMessage('tools-save-status', d.message, 'success');
+                if (reset) loadToolDescriptions();
+            }).catch(e => showStatusMessage('tools-save-status', `Error: ${e.message}`, 'error'));
+        }
+        function showStatusMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `save-status ${type}`;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html> 

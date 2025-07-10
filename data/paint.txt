@@ -1,0 +1,66 @@
+----------------------------------------------
+Giá thi công vật liệu sơn của công ty DBPLUS
+1. Sơn Tường Màu Trắng Sứ:
+Tình trạng: Có Sẵn
+Giá: 1.200.000 hoặc 1.600.000 đồng/m^2
+
+2. Sơn Tường Xanh Biển Nhạt:
+Tình trạng: Có Sẵn
+Giá: 1.400.000 hoặc 1.800.000 đồng/m^2
+
+3. Sơn Tường Hồng Phấn Nhẹ:
+Tình trạng: Đặt Hàng
+Giá: 1.300.000 hoặc 1.750.000 đồng/m^2
+
+4. Sơn Tường Ghi Xám Mờ:
+Tình trạng: Có Sẵn
+Giá: 1.500.000 hoặc 1.950.000 đồng/m^2
+
+5. Sơn Tường Vàng Kem:
+Tình trạng: Đặt Hàng
+Giá: 1.350.000 hoặc 1.800.000 đồng/m^2
+
+6. Sơn Tường Be Nhẹ Mịn:
+Tình trạng: Có Sẵn
+Giá: 1.600.000 hoặc 2.100.000 đồng/m^2
+
+7. Sơn Tường Đỏ Đô Nhẹ:
+Tình trạng: Đặt Hàng
+Giá: 1.200.000 hoặc 1.600.000 đồng/m^2
+
+8. Sơn Tường Xanh Cốm:
+Tình trạng: Có Sẵn
+Giá: 1.300.000 hoặc 1.700.000 đồng/m^2
+
+9. Sơn Tường Cam San Hô:
+Tình trạng: Đặt Hàng
+Giá: 1.400.000 hoặc 1.900.000 đồng/m^2
+
+10. Sơn Tường Xanh Rêu Trầm:
+Tình trạng: Có Sẵn
+Giá: 1.300.000 hoặc 1.750.000 đồng/m^2
+
+11. Sơn Tường Xanh Navy Đậm:
+Tình trạng: Đặt Hàng
+Giá: 1.500.000 hoặc 2.000.000 đồng/m^2
+
+12. Sơn Tường Nâu Đất:
+Tình trạng: Có Sẵn
+Giá: 1.400.000 hoặc 1.850.000 đồng/m^2
+
+13. Sơn Tường Trắng Kem:
+Tình trạng: Có Sẵn
+Giá: 1.300.000 hoặc 1.650.000 đồng/m^2
+
+14. Sơn Tường Tím Nhạt:
+Tình trạng: Đặt Hàng
+Giá: 1.400.000 hoặc 1.850.000 đồng/m^2
+
+15. Sơn Tường Vàng Mù Tạt:
+Tình trạng: Có Sẵn
+Giá: 1.500.000 hoặc 1.950.000 đồng/m^2
+
+Lưu ý: 
+- Nếu diện tích sàn hoặc tường (tổng cho mỗi loại đá) vượt 25m^2, tổng tiền thi công sẽ được tính dựa trên giá thâp hơn trong 2 giá.
+- Nếu đặt hàng, thời gian có hàng sẽ rơi vào 3-5 ngày.
+----------------------------------------------

@@ -4,6 +4,7 @@ Works with a chat model with tool calling support.
 """
 
 from datetime import UTC, datetime
+import uuid
 from typing import Dict, List, Literal, cast
 
 from langchain_core.messages import AIMessage
@@ -15,11 +16,14 @@ from react_agent.state import InputState, State
 from react_agent.tools import TOOLS
 from react_agent.utils import load_chat_model
 
+# Tracing has been removed as it was causing issues and the file was deleted.
+TRACING_AVAILABLE = False
+
 # Define the function that calls the model
 
 
 async def call_model(state: State) -> Dict[str, List[AIMessage]]:
-    """Call the LLM powering our "agent".
+    """Call the LLM powering our "agent" asynchronously.
 
     This function prepares the prompt, initializes the model, and processes the response.
 
@@ -41,12 +45,72 @@ async def call_model(state: State) -> Dict[str, List[AIMessage]]:
     )
 
     # Get the model's response
-    response = cast(
-        AIMessage,
-        await model.ainvoke(
-            [{"role": "system", "content": system_message}, *state.messages]
-        ),
-    )
+    messages = [{"role": "system", "content": system_message}, *state.messages]
+
+    # --- LOGGING: Print the prompt being sent to the LLM ---
+    print("\n" + "="*50)
+    print("🚀 SENDING PROMPT TO LLM 🚀")
+    print("="*50)
+    for msg in messages:
+        # Check for message type and print content accordingly
+        if isinstance(msg, dict):
+            print(f"[{msg.get('role', 'unknown').upper()}]:")
+            print(msg.get('content'))
+        else: # It's a BaseMessage object
+            print(f"[{msg.type.upper()}]:")
+            print(msg.content)
+            if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                print(f"Tool Calls: {msg.tool_calls}")
+        print("-" * 20)
+    # --- END LOGGING ---
+    
+    response = cast(AIMessage, await model.ainvoke(messages))
+
+    # --- LOGGING: Print the LLM response and token usage ---
+    print("\n" + "="*50)
+    print("📊 LLM RESPONSE & TOKEN USAGE 📊")
+    print("="*50)
+    print(f"[AI RESPONSE]:\n{response.content}")
+    if response.tool_calls:
+        print(f"Tool Calls: {response.tool_calls}")
+    
+    # Extract and log token usage from response metadata
+    if response.response_metadata and 'token_usage' in response.response_metadata:
+        token_usage = response.response_metadata['token_usage']
+        print("\n--- TOKEN USAGE ---")
+        print(f"  Prompt Tokens: {token_usage.get('prompt_tokens', 'N/A')}")
+        print(f"  Completion Tokens: {token_usage.get('completion_tokens', 'N/A')}")
+        print(f"  Total Tokens: {token_usage.get('total_tokens', 'N/A')}")
+    else:
+        print("\n--- TOKEN USAGE ---")
+        print("  Token usage data not available in response.")
+    print("="*50 + "\n")
+    # --- END LOGGING ---
+
+    # Clean the response content
+    if response.content and isinstance(response.content, str):
+        import re
+        # Remove <think>...</think> blocks
+        think_regex = re.compile(r"<think>.*?</think>", re.DOTALL)
+        # Remove [AI]: prefixes
+        ai_prefix_regex = re.compile(r"\[AI\]:.*?(\n|$)", re.DOTALL)
+        # Remove Tool Calls: [...] text - match different variations
+        tool_calls_regex = re.compile(r"Tool Calls:?\s*\[.*?\]", re.DOTALL)
+        # Alternative tool call formats
+        alt_tool_calls_regex = re.compile(r"Tool Call[s]?:.*?(\n|$)", re.DOTALL)
+        
+        cleaned_content = think_regex.sub("", response.content).strip()
+        cleaned_content = ai_prefix_regex.sub("", cleaned_content).strip()
+        cleaned_content = tool_calls_regex.sub("", cleaned_content).strip()
+        cleaned_content = alt_tool_calls_regex.sub("", cleaned_content).strip()
+        
+        # Create a new response with cleaned content
+        response = AIMessage(
+            content=cleaned_content,
+            id=response.id,
+            tool_calls=response.tool_calls,
+            response_metadata=response.response_metadata if hasattr(response, 'response_metadata') else None
+        )
 
     # Handle the case when it's the last step and the model still wants to use a tool
     if state.is_last_step and response.tool_calls:
@@ -63,12 +127,36 @@ async def call_model(state: State) -> Dict[str, List[AIMessage]]:
     return {"messages": [response]}
 
 
-# Define a new graph
+def call_model_sync(state: State) -> Dict[str, List[AIMessage]]:
+    """Synchronous wrapper around the async call_model function.
+    
+    This allows the function to be used with the synchronous invoke API.
+    
+    Args:
+        state (State): The current state of the conversation.
+        
+    Returns:
+        dict: A dictionary containing the model's response message.
+    """
+    import asyncio
+    
+    # Create a new event loop
+    loop = asyncio.new_event_loop()
+    
+    try:
+        # Run the async function in the new loop
+        return loop.run_until_complete(call_model(state))
+    finally:
+        # Clean up the loop
+        loop.close()
 
-builder = StateGraph(State, input=InputState, config_schema=Configuration)
+# Define a new graph
+# FIX: Removed `input=InputState` and `executor=threading.Thread` as they are deprecated
+# or causing issues with the current langgraph version.
+builder = StateGraph(State, config_schema=Configuration)
 
 # Define the two nodes we will cycle between
-builder.add_node(call_model)
+builder.add_node("call_model", call_model_sync)
 builder.add_node("tools", ToolNode(TOOLS))
 
 # Set the entrypoint as `call_model`

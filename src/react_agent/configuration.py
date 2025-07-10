@@ -24,7 +24,7 @@ class Configuration:
     )
 
     model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
-        default="anthropic/claude-3-5-sonnet-20240620",
+        default="ollama/qwen3:30b-a3b",
         metadata={
             "description": "The name of the language model to use for the agent's main interactions. "
             "Should be in the form: provider/model-name."
@@ -32,9 +32,23 @@ class Configuration:
     )
 
     max_search_results: int = field(
-        default=10,
+        default=5,
         metadata={
             "description": "The maximum number of search results to return for each search query."
+        },
+    )
+    
+    use_orq_tracing: bool = field(
+        default=False,
+        metadata={
+            "description": "Whether to use Orq AI tracing for LLM calls."
+        },
+    )
+    
+    orq_deployment_key: str = field(
+        default="Deployment_Example",
+        metadata={
+            "description": "The deployment key to use for Orq AI tracing."
         },
     )
 

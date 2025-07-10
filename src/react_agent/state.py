@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Sequence, Optional
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph import add_messages
@@ -18,6 +18,7 @@ class InputState:
     This class is used to define the initial state and structure of incoming data.
     """
 
+    conversation_id: Optional[str] = None
     messages: Annotated[Sequence[AnyMessage], add_messages] = field(
         default_factory=list
     )
