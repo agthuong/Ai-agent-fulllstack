@@ -1,0 +1,34 @@
+{
+   "Oak": {
+     "Gỗ nguyên khối": "3,800,000 VND/m^2",
+     "Gỗ ép nhiều lớp": "800,000 VND/m^2"
+   },
+   "Walnut": {
+     "Gỗ nguyên khối": "7,500,000 VND/m^2",
+     "Gỗ ép nhiều lớp": "900,000 VND/m^2"
+   },
+   "Ash": {
+     "Gỗ nguyên khối": "3,550,000 VND/m^2",
+     "Gỗ ép nhiều lớp": "700,000 VND/m^2"
+   },
+   "Xoan đào": {
+     "Gỗ nguyên khối": "2,800,000 VND/m^2",
+     "Gỗ ép nhiều lớp": "700,000 VND/m^2"
+   },
+   "Lim": {
+     "Gỗ nguyên khối": "5,500,000 VND/m^2",
+     "Ván ghép thanh": "3,200,000 VND/m^2"
+   },
+   "Gỗ đỏ": {
+     "Gỗ nguyên khối": "8,000,000 VND/m^2",
+     "Ván ghép thanh": "5,500,000 VND/m^2"
+   },
+   "MDF": {
+     "Lõi thường phủ Melamine": "350,000 VND/m^2",
+     "Lõi xanh chống ẩm phủ Melamine": "450,000 VND/m^2"
+   },
+   "Plywood": {
+     "Phủ Melamine": "400,000 VND/m^2"
+   }
+ }
+ 

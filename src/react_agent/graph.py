@@ -47,18 +47,44 @@ async def call_model(state: State) -> Dict[str, List[AIMessage]]:
     # Get the model's response
     messages = [{"role": "system", "content": system_message}, *state.messages]
 
+    # --- Add a reminder message before final generation ---
+    # Check if the last message in the state is a ToolMessage, which means we just ran tools.
+    if len(state.messages) > 1 and isinstance(state.messages[-1], dict) and state.messages[-1].get('role') == 'tool':
+        # Find the last human message to remind the LLM of the user's request
+        last_human_message_content = ""
+        for i in range(len(messages) - 1, -1, -1):
+            msg = messages[i]
+            is_human = (isinstance(msg, dict) and msg.get('role') == 'user') or \
+                       (not isinstance(msg, dict) and getattr(msg, 'type', None) == 'human')
+            if is_human:
+                last_human_message_content = msg.get('content') if isinstance(msg, dict) else msg.content
+                break
+        
+        if last_human_message_content:
+            reminder_text = (
+                "--------------------\n"
+                "ĐÃ CÓ KẾT QUẢ TỪ TOOL. HÃY TỔNG HỢP VÀ TRẢ LỜI. \n"
+                f"NHẮC LẠI YÊU CẦU CUỐI CÙNG CỦA NGƯỜI DÙNG: '{last_human_message_content}'"
+                "\n--------------------"
+            )
+            messages.append({"role": "system", "content": reminder_text})
+    # --- End reminder message ---
+
+
     # --- LOGGING: Print the prompt being sent to the LLM ---
     print("\n" + "="*50)
     print("🚀 SENDING PROMPT TO LLM 🚀")
     print("="*50)
     for msg in messages:
-        # Check for message type and print content accordingly
+        # Simplified logging to avoid confusion
         if isinstance(msg, dict):
-            print(f"[{msg.get('role', 'unknown').upper()}]:")
-            print(msg.get('content'))
+            role = msg.get('role', 'unknown').upper()
+            content = msg.get('content', '')
+            print(f"[{role}]:\n{content}")
         else: # It's a BaseMessage object
-            print(f"[{msg.type.upper()}]:")
-            print(msg.content)
+            msg_type = getattr(msg, 'type', 'unknown').upper()
+            content = getattr(msg, 'content', '')
+            print(f"[{msg_type}]:\n{content}")
             if hasattr(msg, 'tool_calls') and msg.tool_calls:
                 print(f"Tool Calls: {msg.tool_calls}")
         print("-" * 20)
@@ -151,8 +177,7 @@ def call_model_sync(state: State) -> Dict[str, List[AIMessage]]:
         loop.close()
 
 # Define a new graph
-# FIX: Removed `input=InputState` and `executor=threading.Thread` as they are deprecated
-# or causing issues with the current langgraph version.
+# FIX: Removed `input=InputState` and `executor=threading.Thread`
 builder = StateGraph(State, config_schema=Configuration)
 
 # Define the two nodes we will cycle between

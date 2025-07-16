@@ -24,7 +24,7 @@ class Configuration:
     )
 
     model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
-        default="ollama/qwen3:30b-a3b",
+        default="ollama/qwen3:30b",
         metadata={
             "description": "The name of the language model to use for the agent's main interactions. "
             "Should be in the form: provider/model-name."
@@ -32,7 +32,7 @@ class Configuration:
     )
 
     max_search_results: int = field(
-        default=5,
+        default=2,
         metadata={
             "description": "The maximum number of search results to return for each search query."
         },

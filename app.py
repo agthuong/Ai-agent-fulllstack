@@ -3,10 +3,11 @@ import asyncio
 import uuid
 import base64
 import re
-from typing import Dict, Any
+from typing import Dict, Any, cast
 from flask import Flask, request, jsonify, render_template
 import nest_asyncio
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
+from langchain_core.runnables import RunnableConfig
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
@@ -17,10 +18,10 @@ load_dotenv()
 nest_asyncio.apply()
 
 # Import the ReAct agent graph and other necessary modules
-from react_agent.graph import graph
+from react_agent.graph import graph, State
 from react_agent.configuration import Configuration
 from react_agent.prompts import SYSTEM_PROMPT
-from react_agent.tools import material_price_query, search
+from react_agent.tools import material_price_query, search, get_historical_image_report
 from react_agent.vision import get_gemini_vision_report
 from react_agent.memory import memory_manager
 
@@ -37,7 +38,8 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 custom_system_prompt = SYSTEM_PROMPT
 tool_descriptions = {
     "material_price_query": material_price_query.__doc__ or "Query for material price information",
-    "search": search.__doc__ or "Search for general web results"
+    "search": search.__doc__ or "Search for general web results",
+    "get_historical_image_report": get_historical_image_report.__doc__ or "Get a past image analysis report"
 }
 
 def prune_history_for_model(history: list, max_pairs: int) -> list:
@@ -77,12 +79,14 @@ def index():
 def query_agent():
     user_query = request.form.get('query', '')
     image_file = request.files.get('image')
+    # Lấy message_id từ request nếu có
+    message_id = request.form.get('message_id')
 
     if not user_query and not image_file:
         return jsonify({'error': 'No query or image provided'}), 400
     
     data = request.form
-    model = data.get('model', 'ollama/qwen3:30b-a3b')
+    model = data.get('model', 'qwen3:30b')
     conversation_id = data.get('conversation_id') or str(uuid.uuid4())
     
     try:
@@ -91,83 +95,141 @@ def query_agent():
         pruned_history = prune_history_for_model(original_history, 3)
 
         # 2. Prepare the messages for the graph, starting with the pruned history
-        # Chỉ giữ lại [IMAGE REPORT]: nếu có, và các HumanMessage, AIMessage
-        image_report_msg = None
+        # Chỉ giữ lại các HumanMessage, AIMessage cho history, và xử lý riêng image report
         filtered_history = []
+        image_report_msg = None
         for msg in pruned_history:
             if isinstance(msg, SystemMessage) and '[IMAGE REPORT]:' in str(msg.content):
                 image_report_msg = msg
             elif isinstance(msg, (HumanMessage, AIMessage)):
                 filtered_history.append(msg)
+        
+        # Khởi tạo danh sách messages để gửi đến graph
         messages_to_graph = []
-        if image_report_msg:
-            messages_to_graph.append(image_report_msg)
-        messages_to_graph.extend(filtered_history)
+        messages_to_graph.extend(filtered_history)  # Đầu tiên là history
         messages_to_save_this_turn = []
         report_str = "[IMAGE REPORT]:"
+        new_report_str = "[IMAGE REPORT]:"
 
         # 3. If a new image is uploaded, remove any old vision reports from the context
         if image_file:
-            messages_to_graph = [msg for msg in messages_to_graph if not (isinstance(msg, SystemMessage) and report_str in msg.content)]
+            # Xóa image report cũ nếu có
+            if image_report_msg:
+                image_report_msg = None
             
             # And create a new vision report
-            vision_prompt = (
-                "Mô tả các vật liệu được sử dụng ở tường, sàn trong hình ảnh vào vật liệu của nội thất. Nếu không phải ảnh nội thất, vẫn mô tả hình ảnh nhưng nói rõ ảnh có vẻ không liên quan đến nội thất."
-                "Ví dụ: Ảnh có 1 tường làm bằng gỗ (có vẻ là gỗ sồi), 2 tường bằng đá (có vẻ là marble), sàn nhà làm bằng gỗ (không xác định cụ thể)"
-                "Trả lời giống như ví dụ, không nói gì thêm."
-                "Lưu ý: Thạch cao và Sơn là 2 loại khác nhau, phân biệt rõ ràng."
-                "Đối với các vật liệu mà trong hình có như gỗ, đá, sơn, giấy dán tường thì thêm dòng 'hãy sử dụng tool material_price_query để tra cứu giá các vật liệu gỗ, đá, sơn, giấy dán tường. Nói rõ vật liệu nào dùng cho tường hay sàn' (tương ứng với các vật liệu có trong ảnh, nếu không có thì không cần nói)"
-            )
+            vision_prompt = ("""
+Nhiệm vụ: Phân tích và phân loại vật liệu thi công từ ảnh nội thất.
+
+Danh mục vật liệu:
+    1. Wood: Oak, Walnut, Ash, Xoan đào, Ván ghép thanh, MDF, Plywood
+    2. Wallpaper: Floral, Stripes, Plain / Texture, Geometric, Classic / Vintage, Nature / Scenic, Material Imitation
+    3. Stone: Marble, Granite, Onyx, Quartz
+    4. Paint: Color paint, Texture effect paint
+Mục tiêu:
+- Phân loại rõ Tường, Sàn, Trần nếu thấy trong ảnh.
+- Mapping rõ Material (Gỗ, Đá, Sơn, Giấy dán tường) và Type cụ thể (Oak, Walnut, Marble, Sơn màu, …).
+- Cố gắng mapping theo các vật liệu trong danh mục vật liệu, nếu khác hoàn toàn thì material là null.
+- Nếu không rõ loại cụ thể, ghi “null” và “Trong dataset: false”.
+- Luôn mô tả đủ 3 tường chính và 1 tường phán đoán nếu thiếu.
+- Nếu là ảnh nội thất, không cần mô tả.
+Position bao gồm: Tường bên trái, Tường bên phải, Tường đối diện, Tường sau lưng.
+Nếu không phải ảnh nội thất, chỉ trả về:
+    Nội thất: false
+    Mô tả hình ảnh: (mô tả chi tiết hình ảnh)
+    Nếu không khớp danh mục, ghi “null” và “Trong dataset: false”.
+Quy tắc gộp
+    Nếu nhiều vị trí có cùng Material và Type, gộp lại thành 1 dòng, liệt kê Position phân tách dấu phẩy:
+    Material: [Material] - Type: [Type] - Position: Tường bên trái, Tường bên phải.
+    Luôn đảm bảo đủ 4 tường (tường sau lưng có thể là phán đoán).
+Định dạng trả về:
+Interior: true/false
+Material: ... - Type: ... - Position: Tường bên trái, Tường đối diện, Sàn
+Material: ... - Type: ... - Position: Tường bên phải, Trần, Tường sau lưng.
+...
+Nếu không phải ảnh nội thất:
+Nội thất: false
+Mô tả: (mô tả chi tiết hình ảnh)
+            """)
             image_bytes = image_file.read()
             gemini_report = get_gemini_vision_report(image_bytes, vision_prompt)
             image_base64 = base64.b64encode(image_bytes).decode('utf-8')
-            memory_manager.add_image_context(conversation_id, image_base64, gemini_report)
             
             user_input = user_query if user_query else "Báo giá các vật liệu có trong hình ảnh."
             user_message = HumanMessage(content=user_input)
+            
+            # Sử dụng message_id từ frontend hoặc tạo mới
+            if message_id:
+                user_message.id = message_id
+            else:
+                user_message.id = str(uuid.uuid4())
+                
+            # Thay đổi định dạng IMAGE REPORT để làm rõ nguồn gốc
             report_message = SystemMessage(content=f"[IMAGE REPORT]:\n{gemini_report}")
             
-            messages_to_graph.extend([user_message, report_message])
+            # Lưu hình ảnh vào context và liên kết với tin nhắn cụ thể
+            memory_manager.add_image_context(conversation_id, image_base64, gemini_report, user_message.id)
+            
+            # Thêm report message vào sau history và trước câu hỏi hiện tại
+            messages_to_graph.append(report_message)
+            messages_to_graph.append(user_message)
+            
             messages_to_save_this_turn.extend([user_message, report_message])
         else:
+            # Nếu có image report cũ, thêm vào sau history và trước câu hỏi hiện tại
+            if image_report_msg:
+                # Cập nhật định dạng của image report cũ nếu cần
+                if isinstance(image_report_msg.content, str) and report_str in image_report_msg.content:
+                    # Thay đổi định dạng từ cũ sang mới
+                    updated_content = image_report_msg.content.replace(report_str, new_report_str)
+                    image_report_msg = SystemMessage(content=updated_content)
+                
+                messages_to_graph.append(image_report_msg)
+            
+            # Thêm câu hỏi hiện tại vào cuối cùng
             user_message = HumanMessage(content=user_query)
+            # Thêm ID cho tin nhắn nếu không có
+            if not hasattr(user_message, "id") or not user_message.id:
+                user_message.id = message_id or str(uuid.uuid4())
             messages_to_graph.append(user_message)
             messages_to_save_this_turn.append(user_message)
 
-        # 4. Clean out <think> blocks from AI messages in the history
+        # 4. Clean out <think> blocks from AI messages in the history before sending to graph
         think_regex = re.compile(r"<think>.*?</think>", re.DOTALL)
-        ai_prefix_regex = re.compile(r"\[AI\]:.*?(\n|$)", re.DOTALL)
-        tool_calls_regex = re.compile(r"Tool Calls: \[.*?\]", re.DOTALL)
-        cleaned_messages_to_graph = []
+        cleaned_messages_for_graph = []
         for msg in messages_to_graph:
             if isinstance(msg, AIMessage) and isinstance(msg.content, str):
                 cleaned_content = think_regex.sub("", msg.content).strip()
-                cleaned_content = ai_prefix_regex.sub("", cleaned_content).strip()
-                cleaned_content = tool_calls_regex.sub("", cleaned_content).strip()
-                # Create a new message with the cleaned content
                 cleaned_msg = AIMessage(content=cleaned_content, id=msg.id, tool_calls=msg.tool_calls)
-                cleaned_messages_to_graph.append(cleaned_msg)
+                cleaned_messages_for_graph.append(cleaned_msg)
             else:
-                cleaned_messages_to_graph.append(msg)
-        messages_to_graph = cleaned_messages_to_graph
+                cleaned_messages_for_graph.append(msg)
 
-        # 5. Invoke the agent graph
-        input_data = {"messages": messages_to_graph, "conversation_id": conversation_id}
+        # 5. Invoke the agent graph with the full, cleaned history
+        input_data = cast(State, {"messages": cleaned_messages_for_graph, "conversation_id": conversation_id})
         system_prompt_formatted = custom_system_prompt.format(
             conversation_id=conversation_id,
             system_time=datetime.now(timezone.utc).isoformat()
         )
-        config = {"configurable": {"model": model, "system_prompt": system_prompt_formatted}}
+        config: RunnableConfig = {"configurable": {"model": model, "system_prompt": system_prompt_formatted}}
         response = run_async(graph.ainvoke(input_data, config=config))
         
         # 6. Save the new messages to memory
-        new_messages_from_graph = response["messages"][len(messages_to_graph):]
+        new_messages_from_graph = response["messages"][len(cleaned_messages_for_graph):]
         messages_to_save_this_turn.extend(new_messages_from_graph)
         memory_manager.add_messages(conversation_id, messages_to_save_this_turn)
 
-        # 7. Prepare the final response for the UI
+        # 7. Prepare the final response: clean up the last AI message
         ai_message = response["messages"][-1]
+        
+        # Remove any tool call representations from the final content
+        if isinstance(ai_message.content, str):
+            # General cleanup of residual tool call syntax that might leak
+            tool_call_pattern = re.compile(r'Tool Calls:.*', re.DOTALL)
+            ai_message.content = tool_call_pattern.sub('', ai_message.content).strip()
+
         tool_calls = []
+        # The tool_calls attribute is still preserved for the UI if needed
         if isinstance(ai_message, AIMessage) and ai_message.tool_calls:
             for tool_call in ai_message.tool_calls:
                 tool_calls.append({
@@ -194,17 +256,38 @@ def list_sessions():
 @app.route('/api/sessions/<session_id>', methods=['GET'])
 def get_session_history(session_id):
     history = memory_manager.get_history_serializable(session_id)
-    return jsonify(history)
+    
+    # Get session metadata
+    sessions = memory_manager.list_sessions()
+    session_info = next((s for s in sessions if s["id"] == session_id), None)
+    
+    return jsonify({
+        "history": history,
+        "metadata": session_info
+    })
 
 @app.route('/api/sessions/<session_id>', methods=['DELETE'])
 def delete_session(session_id):
     memory_manager.clear_history(session_id)
     return jsonify({'message': f'Session {session_id} cleared successfully.'})
 
+@app.route('/api/sessions/<session_id>', methods=['PATCH'])
+def update_session(session_id):
+    data = request.get_json(silent=True) or {}
+    
+    if 'name' in data:
+        success = memory_manager.rename_session(session_id, data['name'])
+        if success:
+            return jsonify({'message': f'Session renamed to {data["name"]}'})
+        else:
+            return jsonify({'error': f'Session {session_id} not found'}), 404
+    
+    return jsonify({'error': 'No valid update parameters provided'}), 400
+
 @app.route('/api/models', methods=['GET'])
 def list_models():
     """API endpoint to list available models."""
-    models = [{'id': 'ollama/qwen3:30b-a3b', 'name': 'Qwen3 30B'}]
+    models = [{'id': 'ollama/qwen3:30b', 'name': 'qwen3:30b'}]
     return jsonify(models)
 
 @app.route('/api/system-prompt', methods=['GET'])

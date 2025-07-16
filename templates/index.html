@@ -53,6 +53,49 @@
         #session-list li:hover, #session-list li.active {
             background-color: #34495e;
         }
+        #session-list li .session-name {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #session-list li .edit-session-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px;
+            margin-right: 5px;
+            visibility: hidden;
+        }
+        #session-list li:hover .edit-session-btn {
+            visibility: visible;
+        }
+        .session-edit-form {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .session-edit-form input {
+            flex-grow: 1;
+            background-color: #34495e;
+            color: white;
+            border: 1px solid #3498db;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .session-edit-form button {
+            background: none;
+            border: none;
+            color: #2ecc71;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 3px;
+        }
+        .session-edit-form .cancel-btn {
+            color: #e74c3c;
+        }
         .delete-session-btn {
             background: none;
             border: none;
@@ -107,6 +150,39 @@
             border-radius: 18px;
             max-width: 80%;
             line-height: 1.5;
+        }
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .image-preview-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+        }
+        .image-preview-modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            margin-top: 30px;
+        }
+        .image-preview-close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
         }
         .user-message {
             background-color: #3498db;
@@ -275,6 +351,121 @@
             line-height: 24px;
             text-align: center;
         }
+        
+        /* Định dạng cho bảng */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9em;
+            min-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        table thead tr {
+            background-color: #2980b9;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        table th, table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        table tbody tr:nth-of-type(even) {
+            background-color: #f8f9fa;
+        }
+
+        table tbody tr:last-of-type {
+            border-bottom: 2px solid #2980b9;
+        }
+        
+        /* Định dạng cho hàng tổng cộng */
+        tr.total-row td {
+            background-color: #eaf2f8;
+            font-weight: bold;
+            border-top: 2px solid #2980b9;
+        }
+        
+        /* Cải thiện định dạng của chú thích */
+        .table-note {
+            font-style: italic;
+            color: #555;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 3px solid #2980b9;
+        }
+
+        /* Fast Mode Toggle Switch */
+        .query-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .fast-mode {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .fast-mode label {
+             margin-bottom: 0; /* Override default label style */
+             cursor: pointer;
+             font-weight: normal;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2ecc71;
+        }
+        input:checked + .slider:before {
+            -webkit-transform: translateX(14px);
+            -ms-transform: translateX(14px);
+            transform: translateX(14px);
+        }
     </style>
 </head>
 <body>
@@ -306,16 +497,27 @@
                     <div class="form-group">
                         <label for="model">Select Model:</label>
                         <select id="model">
-                            <option value="ollama/qwen3:30b-a3b">Qwen3 30B</option>
+                            <option value="ollama/qwen3:30b">Qwen3 30B</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="query">Enter Your Query:</label>
                         <textarea id="query" rows="3" placeholder="E.g., 'What is the price of wood?'"></textarea>
                     </div>
-                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
-                    <button id="upload-btn">Upload Image</button>
-                    <button id="submit-btn">Submit</button>
+                    <div class="query-actions">
+                        <div>
+                            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                            <button id="upload-btn">Upload Image</button>
+                            <button id="submit-btn">Submit</button>
+                        </div>
+                        <div class="fast-mode">
+                            <label for="fast-mode-switch">Fast Mode</label>
+                            <label class="switch">
+                                <input type="checkbox" id="fast-mode-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
                     <div id="image-preview-container">
                         <img id="image-preview" src="" alt="Image preview">
                         <button id="remove-image-btn">&times;</button>
@@ -350,16 +552,55 @@
         </div>
     </div>
     
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="image-preview-modal">
+        <span class="image-preview-close">&times;</span>
+        <img class="image-preview-modal-content" id="modal-image">
+    </div>
+    
     <script>
         let currentConversationId = null;
 
-        // --- Event Listeners ---
+        // Cấu hình marked.js để hỗ trợ bảng
         document.addEventListener('DOMContentLoaded', function() {
+            // Bật tính năng GFM (GitHub Flavored Markdown) cho bảng
+            marked.setOptions({
+                gfm: true,        // Bật GitHub Flavored Markdown
+                tables: true,     // Bật hỗ trợ bảng
+                breaks: true,     // Chuyển đổi xuống dòng thành <br>
+                smartLists: true, // Sử dụng smartLists
+                xhtml: false      // Sử dụng ''/> cho các thẻ tự đóng
+            });
+            
+            // Tiếp tục các tác vụ khởi tạo khác
             loadSessions();
             loadModels();
             loadSystemPrompt();
             loadToolDescriptions();
         });
+
+        // Định dạng các bảng trong nội dung AI
+        function formatPriceTables() {
+            // Chạy định dạng bảng sau khi nội dung được render
+            const tables = document.querySelectorAll('.assistant-message table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    // Kiểm tra nếu là hàng tổng cộng
+                    const firstCell = row.querySelector('td');
+                    if (firstCell && firstCell.textContent.includes('Tổng thành tiền')) {
+                        row.classList.add('total-row');
+                    }
+                });
+                
+                // Xử lý chú thích nếu có
+                const tableParent = table.parentElement;
+                const nextElement = table.nextElementSibling;
+                if (nextElement && nextElement.textContent.includes('Lưu ý:')) {
+                    nextElement.classList.add('table-note');
+                }
+            });
+        }
 
         document.getElementById('new-chat-btn').addEventListener('click', newChat);
         document.getElementById('submit-btn').addEventListener('click', submitQuery);
@@ -429,38 +670,145 @@
         function loadSessions() {
             fetch('/api/sessions')
                 .then(response => response.json())
-                .then(sessionIds => {
+                .then(sessions => {
                     const sessionList = document.getElementById('session-list');
                     sessionList.innerHTML = '';
-                    sessionIds.forEach(id => {
+                    sessions.forEach(session => {
                         const li = document.createElement('li');
-                        li.textContent = `Session ${id.substring(0, 8)}...`;
-                        li.dataset.sessionId = id;
-                        if (id === currentConversationId) {
-                            li.classList.add('active');
-                        }
+                        li.dataset.sessionId = session.id;
+                        
+                        // Session name span
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'session-name';
+                        nameSpan.textContent = session.name || `Session ${session.id.substring(0, 8)}...`;
+                        li.appendChild(nameSpan);
+                        
+                        // Edit button
+                        const editBtn = document.createElement('button');
+                        editBtn.innerHTML = '✎';
+                        editBtn.title = 'Rename session';
+                        editBtn.className = 'edit-session-btn';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            startEditingSession(li, session);
+                        };
+                        li.appendChild(editBtn);
 
+                        // Delete button
                         const deleteBtn = document.createElement('button');
                         deleteBtn.innerHTML = '&times;';
+                        deleteBtn.title = 'Delete session';
                         deleteBtn.className = 'delete-session-btn';
                         deleteBtn.onclick = (e) => {
                             e.stopPropagation();
-                            deleteSession(id);
+                            deleteSession(session.id);
                         };
-
                         li.appendChild(deleteBtn);
-                        li.onclick = () => loadSessionHistory(id);
+                        
+                        if (session.id === currentConversationId) {
+                            li.classList.add('active');
+                        }
+                        
+                        li.onclick = () => loadSessionHistory(session.id);
                         sessionList.appendChild(li);
                     });
                 }).catch(error => console.error('Error loading sessions:', error));
         }
         
+        function startEditingSession(li, session) {
+            // Store the original content to restore if canceled
+            const originalContent = li.innerHTML;
+            
+            // Create edit form
+            const form = document.createElement('form');
+            form.className = 'session-edit-form';
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const input = form.querySelector('input');
+                saveSessionName(session.id, input.value);
+            };
+            
+            // Input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = session.name || `Session ${session.id.substring(0, 8)}...`;
+            input.addEventListener('click', e => e.stopPropagation());
+            form.appendChild(input);
+            
+            // Save button
+            const saveBtn = document.createElement('button');
+            saveBtn.type = 'submit';
+            saveBtn.innerHTML = '✓';
+            saveBtn.title = 'Save';
+            saveBtn.addEventListener('click', e => e.stopPropagation());
+            form.appendChild(saveBtn);
+            
+            // Cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.innerHTML = '✕';
+            cancelBtn.title = 'Cancel';
+            cancelBtn.className = 'cancel-btn';
+            cancelBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                li.innerHTML = originalContent;
+                // Reattach event handlers
+                li.querySelector('.edit-session-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    startEditingSession(li, session);
+                };
+                li.querySelector('.delete-session-btn').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteSession(session.id);
+                };
+            });
+            form.appendChild(cancelBtn);
+            
+            // Replace content with form
+            li.innerHTML = '';
+            li.appendChild(form);
+            li.onclick = null; // Disable the click event while editing
+            
+            // Focus the input
+            input.focus();
+            input.select();
+        }
+        
+        function saveSessionName(sessionId, newName) {
+            if (!newName.trim()) {
+                alert("Session name cannot be empty");
+                return;
+            }
+            
+            fetch(`/api/sessions/${sessionId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: newName })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(() => {
+                loadSessions(); // Refresh the session list
+            })
+            .catch(error => {
+                console.error('Error updating session name:', error);
+                alert('Failed to update session name. Please try again.');
+                loadSessions(); // Refresh to original state
+            });
+        }
+        
         function loadSessionHistory(sessionId) {
             fetch(`/api/sessions/${sessionId}`)
                 .then(response => response.json())
-                .then(history => {
+                .then(data => {
                     currentConversationId = sessionId;
-                    renderChatHistory(history);
+                    renderChatHistory(data.history);
                     document.querySelectorAll('#session-list li').forEach(li => {
                         li.classList.toggle('active', li.dataset.sessionId === sessionId);
                     });
@@ -481,9 +829,13 @@
 
         function submitQuery() {
             const queryInput = document.getElementById('query');
-            const query = queryInput.value.trim();
+            let query = queryInput.value.trim();
             const imageInput = document.getElementById('image-upload');
             const imageFile = imageInput.files[0];
+
+            if (document.getElementById('fast-mode-switch').checked) {
+                query += ' /no_think';
+            }
 
             if (!query && !imageFile) {
                  alert("Please enter a query or upload an image.");
@@ -498,8 +850,22 @@
             loadingIndicator.style.display = 'block';
             submitButton.disabled = true;
 
+            // Create a temporary message ID for linking with the image
+            const tempMessageId = 'temp-' + Date.now();
+            
+            // If there's an image, create an object URL for immediate display
+            let imageUrl = null;
+            if (imageFile) {
+                imageUrl = URL.createObjectURL(imageFile);
+            }
+
             // Optimistically add user message to UI
-            appendStandardMessage({ type: 'human', content: query, image: imageFile ? URL.createObjectURL(imageFile) : null }, chatHistoryContainer);
+            appendStandardMessage({ 
+                type: 'human', 
+                content: query, 
+                image: imageUrl,
+                id: tempMessageId
+            }, chatHistoryContainer);
             chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
 
             const formData = new FormData();
@@ -510,6 +876,8 @@
             }
             if (imageFile) {
                 formData.append('image', imageFile);
+                // Pass the temp message ID to link with the uploaded image
+                formData.append('message_id', tempMessageId);
             }
 
             fetch('/api/query', {
@@ -578,6 +946,9 @@
                 }
             }
             chatHistoryContainer.scrollTop = chatHistoryContainer.scrollHeight;
+            
+            // Format tables after rendering
+            formatPriceTables();
         }
 
         function appendStandardMessage(message, container) {
@@ -608,6 +979,10 @@
             }
             
             const contentDiv = document.createElement('div');
+            
+            // Xử lý nội dung bảng markdown trước khi render
+            finalContent = formatMarkdownTables(finalContent);
+            
             // Parse content as markdown and render as HTML
             contentDiv.innerHTML = marked.parse(finalContent);
             msgDiv.appendChild(contentDiv);
@@ -622,10 +997,66 @@
             if (imageUrl) {
                  const imgElement = document.createElement('img');
                  imgElement.src = imageUrl;
+                 imgElement.onclick = function() {
+                     openImageModal(imageUrl);
+                 };
                  msgDiv.appendChild(imgElement);
             }
             
             container.appendChild(msgDiv);
+            
+            // Format tables if this is an AI message
+            if (message.type === 'ai') {
+                formatPriceTables();
+            }
+        }
+
+        // Hàm giúp định dạng bảng markdown cho đúng chuẩn
+        function formatMarkdownTables(content) {
+            // Nếu không có bảng, trả về nguyên vẹn
+            if (!content.includes('|')) {
+                return content;
+            }
+            
+            const lines = content.split('\n');
+            const formattedLines = [];
+            let inTable = false;
+            let headerProcessed = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Kiểm tra dòng có phải là một phần của bảng không
+                if (line.includes('|')) {
+                    // Bắt đầu bảng mới
+                    if (!inTable) {
+                        inTable = true;
+                        headerProcessed = false;
+                    }
+                    
+                    // Thêm dòng phân cách giữa header và body nếu cần
+                    if (inTable && !headerProcessed && i < lines.length - 1 && lines[i+1].trim().includes('|')) {
+                        const cells = line.split('|').filter(Boolean).length;
+                        if (!lines[i+1].trim().includes('---')) {
+                            const separatorLine = '| ' + Array(cells).fill('---').join(' | ') + ' |';
+                            formattedLines.push(line);
+                            formattedLines.push(separatorLine);
+                            headerProcessed = true;
+                            continue;
+                        }
+                    }
+                } else {
+                    // Kết thúc bảng hiện tại
+                    if (inTable) {
+                        inTable = false;
+                        headerProcessed = false;
+                    }
+                }
+                
+                formattedLines.push(line);
+            }
+            
+            return formattedLines.join('\n');
         }
 
         function createThoughtBubble(thoughtText) {
@@ -766,6 +1197,27 @@
             el.className = `save-status ${type}`;
             el.style.display = 'block';
             setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // Add image modal functionality
+        const modal = document.getElementById('image-preview-modal');
+        const modalImg = document.getElementById('modal-image');
+        const closeBtn = document.getElementsByClassName('image-preview-close')[0];
+        
+        function openImageModal(imageUrl) {
+            modal.style.display = "block";
+            modalImg.src = imageUrl;
+        }
+        
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        // Close modal when clicking outside the image
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
         }
     </script>
 </body>

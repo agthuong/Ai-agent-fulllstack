@@ -1,0 +1,8 @@
+{
+  "timestamp": "2025-07-16_11-02-50",
+  "date": "16/07/2025",
+  "user": "Khách hàng Demo",
+  "conversation_id": null,
+  "project_name": "Bảng giá paint chi tiết",
+  "content": "Bảng giá thi công chi tiết cho paint:\n\n## Color paint\n- Gốc nước: 225,000 VND/m^2\n- Gốc dầu: 255,000 VND/m^2\n- Nhũ tương: 245,000 VND/m^2\n- Epoxy: 295,000 VND/m^2\n\n## Texture effect paint\n- Giả xi măng: 300,000 VND/m^2\n- Giả đá: 320,000 VND/m^2\n- Vân mây: 350,000 VND/m^2\n- Ánh kim (Metallic): 380,000 VND/m^2"
+}

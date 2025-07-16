@@ -1,0 +1,38 @@
+{
+   "Floral": {
+     "Hoa nhí pastel nhẹ": "140,000 VND/m^2",
+     "Hoa lớn cổ điển": "160,000 VND/m^2",
+     "Hoa lá nhiệt đới": "150,000 VND/m^2"
+   },
+   "Stripes": {
+     "Sọc dọc màu trung tính": "130,000 VND/m^2",
+     "Sọc ngang hiện đại": "125,000 VND/m^2",
+     "Sọc chéo nhẹ": "135,000 VND/m^2"
+   },
+   "Plain / Texture": {
+     "Trơn kem mịn": "120,000 VND/m^2",
+     "Trơn xám nhạt": "120,000 VND/m^2",
+     "Hiệu ứng vải lanh": "140,000 VND/m^2",
+     "Hiệu ứng vân xi măng": "145,000 VND/m^2"
+   },
+   "Geometric": {
+     "Hình học trừu tượng": "140,000 VND/m^2",
+     "Carô Scandinavian": "135,000 VND/m^2"
+   },
+   "Classic / Vintage": {
+     "Tân cổ điển hoa văn": "170,000 VND/m^2",
+     "Vintage hoa nhí": "160,000 VND/m^2",
+     "Baroque sang trọng": "175,000 VND/m^2"
+   },
+   "Nature / Scenic": {
+     "Cảnh rừng lá nhiệt đới": "165,000 VND/m^2",
+     "Gân đá marble": "160,000 VND/m^2",
+     "Hiệu ứng sóng nước": "155,000 VND/m^2"
+   },
+   "Material Imitation": {
+     "Giả vải linen": "140,000 VND/m^2",
+     "Giả bê tông xám": "145,000 VND/m^2",
+     "Giả đá hoa cương": "150,000 VND/m^2"
+   }
+ }
+ 

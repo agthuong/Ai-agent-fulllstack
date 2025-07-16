@@ -1,0 +1,26 @@
+{
+    "Marble": {
+        "Trắng Carrara (vân mây nhẹ)": "1,800,000 VND/m^2",
+        "Trắng sứ (vân khói mờ)": "2,100,000 VND/m^2",
+        "Đen Nero Marquina (vân trắng đậm)": "1,900,000 VND/m^2",
+        "Vàng kem (vân nhẹ)": "1,700,000 VND/m^2",
+        "Xám mây (vân khói)": "1,600,000 VND/m^2",
+        "Nâu classic (vân tự nhiên)": "1,850,000 VND/m^2"
+    },
+    "Granite": {
+        "Đen Huế (hạt mịn)": "900,000 VND/m^2",
+        "Đen Galaxy (hạt ánh kim)": "1,100,000 VND/m^2",
+        "Trắng Kashmir (vân nhẹ)": "1,000,000 VND/m^2",
+        "Xanh ngọc (vân tự nhiên)": "1,300,000 VND/m^2",
+        "Vàng Brazil (vân hạt trung)": "1,200,000 VND/m^2"
+    },
+    "Onyx": {
+        "Onyx trắng xuyên sáng (vân mây)": "2,500,000 VND/m^2",
+        "Onyx vàng xuyên sáng (vân sóng)": "2,600,000 VND/m^2"
+    },
+    "Quartz": {
+        "Quartz Vicostone (vân mây)": "2,200,000 VND/m^2",
+        "Quartz trắng (vân khói)": "2,300,000 VND/m^2"
+    }
+}
+ 
