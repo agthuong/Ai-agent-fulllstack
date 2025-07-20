@@ -119,37 +119,22 @@ def query_agent():
             
             # And create a new vision report
             vision_prompt = ("""
-Nhiệm vụ: Phân tích và phân loại vật liệu thi công từ ảnh nội thất.
+You are a specialist in analyzing interior design photos for construction materials.
+Your task is to identify all visible materials on Walls, Floors, and Ceilings.
 
-Danh mục vật liệu:
-    1. Wood: Oak, Walnut, Ash, Xoan đào, Ván ghép thanh, MDF, Plywood
-    2. Wallpaper: Floral, Stripes, Plain / Texture, Geometric, Classic / Vintage, Nature / Scenic, Material Imitation
-    3. Stone: Marble, Granite, Onyx, Quartz
-    4. Paint: Color paint, Texture effect paint
-Mục tiêu:
-- Phân loại rõ Tường, Sàn, Trần nếu thấy trong ảnh.
-- Mapping rõ Material (Gỗ, Đá, Sơn, Giấy dán tường) và Type cụ thể (Oak, Walnut, Marble, Sơn màu, …).
-- Cố gắng mapping theo các vật liệu trong danh mục vật liệu, nếu khác hoàn toàn thì material là null.
-- Nếu không rõ loại cụ thể, ghi “null” và “Trong dataset: false”.
-- Luôn mô tả đủ 3 tường chính và 1 tường phán đoán nếu thiếu.
-- Nếu là ảnh nội thất, không cần mô tả.
-Position bao gồm: Tường bên trái, Tường bên phải, Tường đối diện, Tường sau lưng.
-Nếu không phải ảnh nội thất, chỉ trả về:
-    Nội thất: false
-    Mô tả hình ảnh: (mô tả chi tiết hình ảnh)
-    Nếu không khớp danh mục, ghi “null” và “Trong dataset: false”.
-Quy tắc gộp
-    Nếu nhiều vị trí có cùng Material và Type, gộp lại thành 1 dòng, liệt kê Position phân tách dấu phẩy:
-    Material: [Material] - Type: [Type] - Position: Tường bên trái, Tường bên phải.
-    Luôn đảm bảo đủ 4 tường (tường sau lưng có thể là phán đoán).
-Định dạng trả về:
-Interior: true/false
-Material: ... - Type: ... - Position: Tường bên trái, Tường đối diện, Sàn
-Material: ... - Type: ... - Position: Tường bên phải, Trần, Tường sau lưng.
-...
-Nếu không phải ảnh nội thất:
-Nội thất: false
-Mô tả: (mô tả chi tiết hình ảnh)
+**CRITICAL OUTPUT FORMATTING RULES:**
+1.  For each identified material, you MUST output a single line in the following exact format:
+    `Material: [Main Category] - Type: [Specific Type] - Position: [Location]`
+2.  **[Main Category]** MUST be one of: "Wood", "Stone", "Paint", "Wallpaper". If it's something else, use "Không xác định".
+3.  **[Specific Type]** should be the specific name (e.g., "Oak", "Marble"). If you cannot identify it, use "Không xác định".
+4.  **[Location]** is where you see it (e.g., "Left Wall", "Floor"). If the same material is in multiple places, list them separated by commas (e.g., "Left Wall, Ceiling").
+5.  Start your entire response with `Interior: true` if it's an interior photo, or `Interior: false` otherwise. DO NOT add any other text or summary.
+
+**EXAMPLE OUTPUT:**
+Interior: true
+Material: Wood - Type: Oak - Position: Floor
+Material: Paint - Type: Không xác định - Position: Left Wall, Right Wall, Facing Wall
+Material: Stone - Type: Marble - Position: Kitchen Countertop
             """)
             image_bytes = image_file.read()
             gemini_report = get_gemini_vision_report(image_bytes, vision_prompt)

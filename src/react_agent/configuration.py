@@ -3,54 +3,35 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields
-from typing import Annotated
+from typing import Annotated, Optional, List, Dict, Any, Union
 
 from langchain_core.runnables import ensure_config
 from langgraph.config import get_config
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage, BaseMessage
+from langgraph.checkpoint.base import BaseCheckpointSaver
 
 from react_agent import prompts
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Configuration:
-    """The configuration for the agent."""
+    """Defines the configurable parameters for the agent."""
 
-    system_prompt: str = field(
-        default=prompts.SYSTEM_PROMPT,
-        metadata={
-            "description": "The system prompt to use for the agent's interactions. "
-            "This prompt sets the context and behavior for the agent."
-        },
-    )
-
-    model: Annotated[str, {"__template_metadata__": {"kind": "llm"}}] = field(
-        default="ollama/qwen3:30b",
-        metadata={
-            "description": "The name of the language model to use for the agent's main interactions. "
-            "Should be in the form: provider/model-name."
-        },
-    )
-
-    max_search_results: int = field(
-        default=2,
-        metadata={
-            "description": "The maximum number of search results to return for each search query."
-        },
-    )
+    model: str = "qwen3:30b"
+    """The main, powerful model for complex tasks like planning and responding."""
     
-    use_orq_tracing: bool = field(
-        default=False,
-        metadata={
-            "description": "Whether to use Orq AI tracing for LLM calls."
-        },
-    )
-    
-    orq_deployment_key: str = field(
-        default="Deployment_Example",
-        metadata={
-            "description": "The deployment key to use for Orq AI tracing."
-        },
-    )
+    fast_model: str = "qwen3:1.7b"
+    """A faster, smaller model for simpler tasks like tool selection."""
+
+    checkpoint_saver: Optional[BaseCheckpointSaver] = field(default=None)
+    """An optional checkpoint saver for persisting agent state."""
+
+    # The system_prompt will be injected at runtime from the config
+    openai_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+
+    _context: Optional[Any] = field(default=None, repr=False)
 
     @classmethod
     def from_context(cls) -> Configuration:

@@ -121,7 +121,7 @@ class MemoryManager:
         """Save session metadata to file."""
         metadata_dict = {id: meta.to_dict() for id, meta in self.session_metadata.items()}
         with open(self.METADATA_FILE, 'w', encoding='utf-8') as f:
-            json.dump(metadata_dict, f, ensure_ascii=False, indent=2)
+            json.dump(metadata_dict, f, ensure_ascii=False, indent=3)
 
     def _load_metadata(self):
         """Load session metadata from file."""

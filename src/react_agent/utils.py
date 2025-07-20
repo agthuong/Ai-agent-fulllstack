@@ -1,34 +1,50 @@
 """Utility & helper functions."""
 
-from langchain.chat_models import init_chat_model
-from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import BaseMessage
 from langchain_ollama import ChatOllama
+import re
 
 
-def get_message_text(msg: BaseMessage) -> str:
-    """Get the text content of a message."""
-    content = msg.content
-    if isinstance(content, str):
-        return content
-    elif isinstance(content, dict):
-        return content.get("text", "")
-    else:
-        txts = [c if isinstance(c, str) else (c.get("text") or "") for c in content]
-        return "".join(txts).strip()
+def cleanup_llm_output(text: str) -> str:
+    """
+    Cleans up the raw output from the LLM.
 
-
-def load_chat_model(fully_specified_name: str) -> BaseChatModel:
-    """Load a chat model from a fully specified name.
+    This function performs two main tasks:
+    1. Removes any <think>...</think> blocks used by the model for reasoning.
+    2. Strips any markdown formatting (like ```json ... ```) that the model
+       might wrap around a JSON output.
 
     Args:
-        fully_specified_name (str): String in the format 'provider/model'.
+        text: The raw string output from the LLM.
+
+    Returns:
+        A cleaned string ready for parsing or further processing.
     """
-    provider, model = fully_specified_name.split("/", maxsplit=1)
-    
-    # Handle Ollama models specifically
-    if provider.lower() == "ollama":
-        return ChatOllama(model=model)
-    
-    # For other providers, use the standard init_chat_model
-    return init_chat_model(model, model_provider=provider)
+    if not isinstance(text, str):
+        return ""
+
+    # 1. Remove <think>...</think> blocks
+    # The re.DOTALL flag allows '.' to match newlines, handling multi-line think blocks.
+    text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+
+    # 2. Strip JSON markdown formatting
+    # This regex looks for optional "json" language identifier and strips the backticks.
+    match = re.search(r'```(json)?\s*(.*?)\s*```', text, re.DOTALL)
+    if match:
+        text = match.group(2).strip()
+
+    return text
+
+
+def load_chat_model(model_name: str):
+    """
+    Loads an Ollama chat model.
+
+    Args:
+        model_name: The name of the Ollama model to load (e.g., "qwen2:7b").
+
+    Returns:
+        An instance of ChatOllama.
+    """
+    # This is a simple wrapper for loading Ollama models.
+    # It can be extended later to include other configurations like base_url.
+    return ChatOllama(model=model_name)
