@@ -1,0 +1,94 @@
+body {
+  background-color: #282c34;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  padding: 20px;
+  border-bottom: 2px solid #444;
+}
+
+.App-header h1 {
+  margin: 0;
+}
+
+.App-header button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: #282c34;
+  font-weight: bold;
+}
+
+.App-header button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.canvas {
+  position: relative;
+  width: 100vw;
+  height: 80vh;
+  margin-top: 20px;
+}
+
+.node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  border-radius: 10px;
+  border: 3px solid #666;
+  background-color: #3a3f4a;
+  transition: all 0.5s ease-in-out;
+  min-width: 150px;
+  text-align: center;
+}
+
+.node-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+}
+
+.node-message {
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+/* Node Statuses */
+.node.idle {
+  border-color: #666;
+  opacity: 0.7;
+}
+
+.node.inactive {
+  border-color: #61dafb;
+  background-color: #3a3f4a;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.node.active {
+  border-color: #ffc107; /* Yellow */
+  background-color: #4a4f5a;
+  box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+  transform: translate(-50%, -50%) scale(1.15);
+  z-index: 10;
+}
+
+.node.complete {
+  border-color: #28a745; /* Green */
+  background-color: #3a3f4a;
+} 

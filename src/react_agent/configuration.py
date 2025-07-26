@@ -20,7 +20,7 @@ class Configuration:
     model: str = "qwen3:30b"
     """The main, powerful model for complex tasks like planning and responding."""
     
-    fast_model: str = "qwen3:1.7b"
+    fast_model: str = "qwen3:30b"
     """A faster, smaller model for simpler tasks like tool selection."""
 
     checkpoint_saver: Optional[BaseCheckpointSaver] = field(default=None)

@@ -46,5 +46,32 @@ def load_chat_model(model_name: str):
         An instance of ChatOllama.
     """
     # This is a simple wrapper for loading Ollama models.
-    # It can be extended later to include other configurations like base_url.
+    # This can be extended later to include other configurations like base_url.
     return ChatOllama(model=model_name)
+
+def _format_history(messages: list) -> str:
+    """Helper to format the history for the prompt."""
+    if not messages:
+        return "No history."
+    # A simple formatting for now, can be improved later.
+    return "\\n".join([f"{msg.type}: {msg.content}" for msg in messages])
+
+def _parse_area_map_from_message(content: str) -> dict:
+    """Parses a pre-processed message to extract a detailed area_map."""
+    area_map = {}
+    # Regex patterns now account for optional dimension descriptions like (dài 8m)
+    patterns = {
+        "sàn": r"- Diện tích sàn: ([\\d.]+)m²",
+        "trần": r"- Diện tích trần: ([\\d.]+)m²",
+        "tường 1": r"- Diện tích tường 1(?: \\(.*\\))?: ([\\d.]+)m²",
+        "tường 2": r"- Diện tích tường 2(?: \\(.*\\))?: ([\\d.]+)m²",
+        "tường 3": r"- Diện tích tường 3(?: \\(.*\\))?: ([\\d.]+)m²",
+        "tường 4": r"- Diện tích tường 4(?: \\(.*\\))?: ([\\d.]+)m²",
+    }
+    
+    for surface, pattern in patterns.items():
+        match = re.search(pattern, content)
+        if match:
+            area_map[surface] = {"area": f"{match.group(1)}m²"}
+
+    return area_map

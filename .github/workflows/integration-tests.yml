@@ -1,4 +1,4 @@
-# This workflow will run integration tests for the current project once per day
+python serve.py# This workflow will run integration tests for the current project once per day
 
 name: Integration Tests
 

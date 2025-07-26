@@ -1,11 +1,11 @@
 {
-   "Color paint": {
+   "color paint": {
      "Gốc nước": "225,000 VND/m^2",
      "Gốc dầu": "258,000 VND/m^2",
      "Nhũ tương": "245,000 VND/m^2",
      "Epoxy": "295,000 VND/m^2"
    },
-   "Texture effect paint": {
+   "texture effect paint": {
      "Giả xi măng": "300,000 VND/m^2",
      "Giả đá": "320,000 VND/m^2",
      "Vân mây": "350,000 VND/m^2",

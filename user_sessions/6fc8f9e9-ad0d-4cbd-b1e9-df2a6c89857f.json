@@ -1,0 +1,14 @@
+[
+  {
+    "role": "system",
+    "content": "[Image Analysis Report]:\nMaterial: đá - Type: null - Position: tường trái - InStock: only_material\nMaterial: đá - Type: null - Position: tường phải (phán đoán) - InStock: only_material\nMaterial: đá - Type: null - Position: tường đối diện - InStock: only_material\nMaterial: đá - Type: null - Position: tường sau lưng (phán đoán) - InStock: only_material\nMaterial: gỗ - Type: Oak - Position: sàn - InStock: true\nMaterial: sơn - Type: Color paint - Position: trần - InStock: true"
+  },
+  {
+    "role": "user",
+    "content": "Tôi muốn báo giá thi công như hình /no_think"
+  },
+  {
+    "role": "assistant",
+    "content": "Xin lỗi, tôi gặp vấn đề khi xử lý yêu cầu của bạn. Vui lòng thử lại."
+  }
+]

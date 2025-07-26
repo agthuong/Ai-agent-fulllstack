@@ -1,0 +1,14 @@
+[
+  {
+    "role": "system",
+    "content": "[Image Analysis Report]:\nMaterial: gỗ - Type: null - Position: sàn - InStock: only_material\nMaterial: đá - Type: null - Position: tường đối diện - InStock: only_material\nMaterial: đá - Type: null - Position: tường phải - InStock: only_material\nMaterial: sơn - Type: Color paint - Position: trần - InStock: true\nMaterial: đá - Type: null - Position: tường trái - InStock: only_material\nMaterial: đá - Type: null - Position: tường sau lưng (phán đoán) - InStock: only_material"
+  },
+  {
+    "role": "user",
+    "content": "Tôi muốn báo giá thi công như hình, diện tích sàn, trần là 20m2, diện tích mỗi bức tường là 10m2 /no_think"
+  },
+  {
+    "role": "assistant",
+    "content": "Dựa trên thông tin phân tích từ ảnh và diện tích được cung cấp, báo giá sơ bộ cho các hạng mục vật liệu như sau:\n\n## Báo Giá Sơ Bộ\n\n### Vị trí: Sàn  \n- **Vật liệu**: Gỗ  \n- **Đơn giá ước tính**: 350.000 VND/m² – 7.500.000 VND/m²  \n- **Diện tích**: 20m²  \n\n### Vị trí: Tường sau lưng (dựa trên phán đoán từ ảnh)  \n- **Vật liệu**: Đá  \n- **Đơn giá ước tính**: 900.000 VND/m² – 2.600.000 VND/m²  \n- **Diện tích**: 10m²  \n\n### Vị trí: Trần  \n- **Vật liệu**: Sơn (loại sơn màu)  \n- **Đơn giá ước tính**: 225.000 VND/m² – 295.000 VND/m²  \n- **Diện tích**: 20m²  \n\n*Lưu ý: Các hạng mục tường không nhìn thấy trong ảnh đã được chúng tôi tạm tính dựa trên phân tích ảnh. Vui lòng cung cấp diện tích chi tiết cho từng hạng mục để nhận báo giá chính xác hơn.*"
+  }
+]

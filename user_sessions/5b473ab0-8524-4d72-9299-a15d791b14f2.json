@@ -1,0 +1,14 @@
+[
+  {
+    "role": "system",
+    "content": "[Image Analysis Report]:\nMaterial: gỗ - Type: Oak - Position: sàn - InStock: true\nMaterial: đá - Type: null - Position: tường đối diện - InStock: only_material\nMaterial: đá - Type: null - Position: tường phải - InStock: only_material\nMaterial: đá - Type: null - Position: tường trái - InStock: only_material\nMaterial: sơn - Type: Color paint - Position: trần - InStock: true\nMaterial: sơn - Type: Color paint - Position: tường sau lưng (phán đoán) - InStock: true"
+  },
+  {
+    "role": "user",
+    "content": "So sánh các vật liệu có trong hình với bên ngoài /no_think"
+  },
+  {
+    "role": "assistant",
+    "content": "Dựa trên thông tin từ ảnh và các dữ liệu thu thập được, báo giá chi tiết cho vật liệu được trình bày như sau:\n\n### Báo Giá Chi Tiết Theo Vật Liệu\n\n| Vật liệu | Loại | Vị trí | Ghi chú |\n|----------|------|--------|---------|\n| Gỗ | Oak | Sàn | Chưa xác định diện tích để tính chi phí |\n| Đá | Không xác định | Tường đối diện, tường phải, tường trái | Chưa xác định diện tích để tính chi phí |\n| Sơn | Màu sơn | Trần, tường sau lưng (phán đoán) | Chưa xác định diện tích để tính chi phí |\n\n### Ghi Chú\n- Tổng chi phí ước tính: 0 VND (chưa bao gồm nhân công và các chi phí phát sinh khác).\n- Chi phí được tính dựa trên giá trung bình của vật liệu.\n- Một số hạng mục như tường không nhìn thấy trong ảnh đã được chúng tôi tạm tính dựa trên phân tích hình ảnh.\n\nLưu ý: Vui lòng cung cấp thêm thông tin về diện tích các khu vực để nhận được báo giá chính xác hơn."
+  }
+]

@@ -1,115 +1,72 @@
 import pytest
 import json
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
-from react_agent.prompts import CENTRAL_ROUTER_PROMPT
+from react_agent.graph import central_router_node
+from react_agent.state import State
 from react_agent.utils import load_chat_model, cleanup_llm_output
+from react_agent.prompts import CENTRAL_ROUTER_PROMPT
+from react_agent.tools import TOOLS
 
-# Mark all tests in this file as async
-pytestmark = pytest.mark.asyncio
+# Load the model once for all tests in this module
+model = load_chat_model("qwen2:1.5b-instruct-q4_0")
 
-@pytest.fixture(scope="module")
-def model():
-    """Fixture to load the model once per test module."""
-    return load_chat_model("qwen3:30b")
+@pytest.mark.asyncio
+async def test_routing_to_single_step_simple():
+    """Tests if the router correctly identifies a simple, single-tool request."""
+    print("\n--- Testing Single-Step Routing (Simple) ---")
+    user_input = "Giá gỗ sồi là bao nhiêu?"
+    state = State(messages=[HumanMessage(content=user_input)])
 
-async def test_routing_for_super_tool_simple_query(model):
-    """
-    Tests if the router correctly identifies a simple request
-    that should be handled by a super-tool.
-    """
-    # 1. Setup
-    user_input = "So sánh giá gỗ sồi trên thị trường với giá của công ty"
-    chat_history = ""
+    router_output = await central_router_node(state)
 
-    prompt = CENTRAL_ROUTER_PROMPT.format(
-        input=user_input,
-        chat_history=chat_history
-    )
+    assert router_output["route"] == "single_step"
+    assert router_output["tool_name"] == "run_preliminary_quote"
+    assert "items" in router_output["tool_args"]
+    assert len(router_output["tool_args"]["items"]) == 1
+    assert router_output["tool_args"]["items"][0]["material_type"] == "gỗ"
+    print("Test passed: Correctly routed to single_step for simple query.")
 
-    # 2. Execution
-    raw_response = await model.ainvoke([SystemMessage(content=prompt)])
-    cleaned_response = cleanup_llm_output(raw_response.content)
+@pytest.mark.asyncio
+async def test_routing_to_single_step_detailed():
+    """Tests if the router correctly identifies a detailed quote request as a single-step."""
+    print("\n--- Testing Single-Step Routing (Detailed) ---")
+    user_input = "Báo giá cho tôi 50m2 gỗ óc chó với ngân sách 80 triệu"
+    state = State(messages=[HumanMessage(content=user_input)])
 
-    print(f"\nModel Raw Response:\n---\n{raw_response.content}\n---")
-    print(f"Cleaned Response:\n---\n{cleaned_response}\n---")
+    router_output = await central_router_node(state)
 
-    # 3. Assertion
-    try:
-        decision = json.loads(cleaned_response)
-    except json.JSONDecodeError:
-        pytest.fail(f"The cleaned response is not valid JSON: {cleaned_response}")
+    assert router_output["route"] == "single_step"
+    assert router_output["tool_name"] == "run_detailed_quote"
+    assert "items" in router_output["tool_args"]
+    assert "area" in router_output["tool_args"]
+    assert "budget" in router_output["tool_args"]
+    assert router_output["tool_args"]["area"] == "50m2"
+    assert router_output["tool_args"]["budget"] == 80000000.0
+    print("Test passed: Correctly routed to single_step for detailed quote.")
 
-    assert isinstance(decision, dict)
-    assert "route" in decision
-    assert "tool_name" in decision
-    assert "args" in decision
+@pytest.mark.asyncio
+async def test_routing_to_multi_step():
+    """Tests if the router correctly identifies a complex request requiring a plan."""
+    print("\n--- Testing Multi-Step Routing ---")
+    user_input = "Báo giá sơn cho phòng khách 30m2 và phòng ngủ 20m2 với tổng ngân sách 50 triệu"
+    state = State(messages=[HumanMessage(content=user_input)])
+    
+    router_output = await central_router_node(state)
 
-    assert decision["route"] == "super_tool"
-    assert decision["tool_name"] == "run_market_comparison"
-    assert isinstance(decision["args"], dict)
-    assert "material" in decision["args"]
-    assert "sồi" in decision["args"]["material"] # Check for keyword
+    assert router_output["route"] == "multi_step"
+    assert "tool_name" not in router_output # Should not decide tool at this stage
+    assert "tool_args" not in router_output
+    print("Test passed: Correctly routed to multi_step for complex query.")
 
-async def test_routing_for_complex_query(model):
-    """
-    Tests if the router correctly identifies a complex request
-    that requires planning (ReAct).
-    """
-    # 1. Setup
-    user_input = "Hãy so sánh giá của gỗ sồi và gỗ óc chó, sau đó chọn loại rẻ hơn để báo giá chi tiết cho diện tích sàn 50m2."
-    chat_history = ""
+@pytest.mark.asyncio
+async def test_routing_to_converse():
+    """Tests if the router correctly identifies a conversational message."""
+    print("\n--- Testing Conversational Routing ---")
+    user_input = "Cảm ơn bạn nhiều"
+    state = State(messages=[HumanMessage(content=user_input)])
 
-    prompt = CENTRAL_ROUTER_PROMPT.format(
-        input=user_input,
-        chat_history=chat_history
-    )
+    router_output = await central_router_node(state)
 
-    # 2. Execution
-    raw_response = await model.ainvoke([SystemMessage(content=prompt)])
-    cleaned_response = cleanup_llm_output(raw_response.content)
-
-    print(f"\nModel Raw Response:\n---\n{raw_response.content}\n---")
-    print(f"Cleaned Response:\n---\n{cleaned_response}\n---")
-
-    # 3. Assertion
-    try:
-        decision = json.loads(cleaned_response)
-    except json.JSONDecodeError:
-        pytest.fail(f"The cleaned response is not valid JSON: {cleaned_response}")
-
-    assert isinstance(decision, dict)
-    assert "route" in decision
-    assert decision["route"] == "plan"
-    assert "tool_name" not in decision # Should not have tool_name for 'plan' route
-    assert "args" not in decision # Should not have args for 'plan' route
-
-async def test_routing_for_conversational_query(model):
-    """
-    Tests if the router correctly identifies a simple conversational message.
-    """
-    # 1. Setup
-    user_input = "Chào bạn, bạn có thể giúp gì cho tôi?"
-    chat_history = ""
-
-    prompt = CENTRAL_ROUTER_PROMPT.format(
-        input=user_input,
-        chat_history=chat_history
-    )
-
-    # 2. Execution
-    raw_response = await model.ainvoke([SystemMessage(content=prompt)])
-    cleaned_response = cleanup_llm_output(raw_response.content)
-
-    print(f"\nModel Raw Response:\n---\n{raw_response.content}\n---")
-    print(f"Cleaned Response:\n---\n{cleaned_response}\n---")
-
-    # 3. Assertion
-    try:
-        decision = json.loads(cleaned_response)
-    except json.JSONDecodeError:
-        pytest.fail(f"The cleaned response is not valid JSON: {cleaned_response}")
-
-    assert isinstance(decision, dict)
-    assert "route" in decision
-    assert decision["route"] == "converse" 
+    assert router_output["route"] == "converse"
+    print("Test passed: Correctly routed to converse for conversational input.") 
