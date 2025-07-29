@@ -1,0 +1,6 @@
+[
+  {
+    "type": "system",
+    "content": "[Image Analysis Report]:\n```json\n[\n  {\n    \"material\": \"gỗ\",\n    \"type\": null,\n    \"position\": \"sàn\",\n    \"in_stock\": \"only_material\"\n  },\n  {\n    \"material\": \"đá\",\n    \"type\": null,\n    \"position\": \"tường trái\",\n    \"in_stock\": \"only_material\"\n  },\n  {\n    \"material\": \"đá\",\n    \"type\": null,\n    \"position\": \"tường phải\",\n    \"in_stock\": \"only_material\"\n  },\n  {\n    \"material\": \"sơn\",\n    \"type\": \"Color paint\",\n    \"position\": \"tường đối diện (phán đoán)\",\n    \"in_stock\": \"true\"\n  },\n  {\n    \"material\": \"sơn\",\n    \"type\": \"Color paint\",\n    \"position\": \"tường sau lưng (phán đoán)\",\n    \"in_stock\": \"true\"\n  },\n  {\n    \"material\": \"sơn\",\n    \"type\": \"Color paint\",\n    \"position\": \"trần (phán đoán)\",\n    \"in_stock\": \"true\"\n  }\n]\n```\n"
+  }
+]

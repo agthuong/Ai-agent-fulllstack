@@ -13,54 +13,40 @@ logger = logging.getLogger(__name__)
 def parse_image_report(image_report: str) -> List[Dict[str, Any]]:
     """
     Parses an image analysis report and returns a list of material components.
-    
-    Args:
-        image_report: The report string from the Gemini Vision API.
-        
-    Returns:
-        A list of dictionaries, where each dictionary represents a material component.
+    Hỗ trợ cả trường hợp nhiều vật liệu trên một dòng (không có xuống dòng).
     """
     if not image_report:
         return []
-    
     components = []
-    
-    # Process each line in the report
-    for line in image_report.strip().split('\n'):
-        line = line.strip()
+    # Tách các entry bằng regex: mỗi entry bắt đầu bằng 'Material:'
+    entries = re.split(r'(?=Material:)', image_report.strip())
+    for entry in entries:
+        line = entry.strip()
         if not line.startswith("Material:"):
             continue
-
+        # Bỏ qua entry không đủ 4 trường
+        if line.count('-') < 3:
+            continue
         logger.info(f"Analyzing material line: {line}")
-        
-        # Use a single regex to capture all parts for efficiency and robustness
         match = re.search(
             r"Material:\s*(?P<material>.*?)\s*-\s*Type:\s*(?P<type>.*?)\s*-\s*Position:\s*(?P<position>.*?)\s*-\s*InStock:\s*(?P<in_stock>\w+)",
             line
         )
-        
         if not match:
             logger.warning(f"Could not parse line: {line}")
             continue
-
         data = match.groupdict()
-        
-        # Clean and structure the component dictionary
         component = {
             "material_type": data["material"].strip(),
             "type": data["type"].strip() if data["type"].strip().lower() != "null" else None,
             "position": data["position"].strip(),
             "in_stock": data["in_stock"].strip().lower()
         }
-        
-        # Convert in_stock to boolean where applicable
         if component["in_stock"] == "true":
             component["in_stock"] = True
         elif component["in_stock"] == "false":
             component["in_stock"] = False
-
         components.append(component)
-    
     logger.info(f"Extracted {len(components)} components from image report")
     return components
 

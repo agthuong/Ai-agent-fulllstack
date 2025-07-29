@@ -107,65 +107,58 @@ def generate_preliminary_quote(components: List[Dict[str, Any]]) -> str:
     if not components:
         return "Không có hạng mục nào để báo giá."
 
+    def extract_all_prices(d):
+        prices = []
+        if isinstance(d, dict):
+            for v in d.values():
+                if isinstance(v, dict):
+                    prices.extend(extract_all_prices(v))
+                else:
+                    prices.append(v)
+        return prices
+
     table_rows = []
-    
     for item in components:
         material_type = item.get("material_type", "N/A")
         specific_type = item.get("type")
         position = item.get("position", "N/A")
-        
         price_range_str = "Không có dữ liệu" # Default
         data = _load_material_data(material_type)
-
         if data:
             try:
                 prices = []
                 target_data = None
-                
                 # Case-insensitive lookup for the specific type
                 if specific_type:
                     for key, value in data.items():
                         if key.lower() == specific_type.lower():
                             target_data = value
                             break
-                else:
-                    target_data = data # Use all types
-
-                if target_data:
-                    if specific_type and isinstance(target_data, dict):
-                        # Get prices from a specific type's variants
-                        prices.extend(target_data.values())
-                    elif not specific_type and isinstance(target_data, dict):
-                        # Get prices from all types
-                        for type_data in target_data.values():
-                            if isinstance(type_data, dict):
-                                prices.extend(type_data.values())
-                
+                # Nếu không có type hoặc không tìm thấy type, lấy toàn bộ giá
+                if not specific_type or not target_data:
+                    prices = extract_all_prices(data)
+                elif target_data and isinstance(target_data, dict):
+                    prices.extend(target_data.values())
                 if prices:
                     numeric_prices = []
                     for p_str in prices:
                         match = re.search(r'([\d,.]+)', str(p_str).replace(',', ''))
                         if match:
                             numeric_prices.append(float(match.group(1)))
-                    
                     if numeric_prices:
                         min_price = min(numeric_prices)
                         max_price = max(numeric_prices)
                         price_range_str = f"{min_price:,.0f} - {max_price:,.0f} VND/m²"
                 else:
                     price_range_str = "Chưa có giá chi tiết"
-            
             except Exception as e:
                 logger.error(f"Lỗi khi xử lý giá cho '{material_type}': {e}")
                 price_range_str = "Lỗi xử lý dữ liệu"
-
         table_rows.append(
             f"| {material_type.title()} | {specific_type or 'Tất cả'} | {position.title()} | {price_range_str} |"
         )
-
     header = "| Vật liệu | Loại | Vị trí | Đơn giá (Ước tính) |\n|---|---|---|---|"
     body = "\n".join(table_rows)
-    
     return f"# Báo Giá Sơ Bộ\n\n{header}\n{body}\n\n*Ghi chú: Đây là báo giá sơ bộ, vui lòng cung cấp diện tích để có báo giá chi tiết.*"
 
 def generate_area_quote(components: List[Dict[str, Any]]) -> str:

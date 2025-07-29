@@ -1,0 +1,6 @@
+[
+  {
+    "type": "system",
+    "content": "[Image Analysis Report]:\nMaterial: gỗ - Type: null - Position: sàn - InStock: only_material\nMaterial: đá - Type: null - Position: tường trái - InStock: only_material\nMaterial: đá - Type: null - Position: tường phải - InStock: only_material\nMaterial: đá - Type: null - Position: tường đối diện - InStock: only_material\nMaterial: sơn - Type: Color paint - Position: tường sau lưng (phán đoán) - InStock: true\nMaterial: sơn - Type: Color paint - Position: trần (phán đoán) - InStock: true\n"
+  }
+]
