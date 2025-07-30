@@ -8,15 +8,28 @@ from datetime import datetime
 import re
 from typing import Optional, List, Dict, Any, Tuple
 import itertools
+from .database_utils import DATABASE
 
 # Thiết lập logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Constants ---
-DATA_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'data_new')
+# Load the database once
+data = DATABASE
+
+# Map material types to database paths (new approach)
 VIETNAMESE_MATERIAL_MAP = {
-    "gỗ": "wood", "sơn": "paint", "đá": "stone", "giấy dán tường": "wallpaper"
+    'gỗ': 'Nội thất',
+    'sắt': 'Nội thất',
+    'nhôm': 'Nội thất',
+    'kính': 'Nội thất',
+    'gạch': 'Sàn',
+    'sơn': 'Tường và vách',
+    'trần': 'Trần',
+    'sàn': 'Sàn',
+    'cửa': 'Cửa',
+    'tủ': 'Nội thất'
 }
 
 # --- Parsing Utilities ---
@@ -67,12 +80,19 @@ def parse_budget(budget_str: Optional[str]) -> float:
 # --- Data Loading ---
 
 def _load_material_data(material_type: str) -> Optional[Dict]:
-    filename_en = VIETNAMESE_MATERIAL_MAP.get(material_type.lower())
-    if not filename_en: return None
-    file_path = os.path.join(DATA_DIR, f"{filename_en}.json")
-    if not os.path.exists(file_path): return None
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+    # Use the new database structure
+    material_path = VIETNAMESE_MATERIAL_MAP.get(material_type.lower())
+    if not material_path: return None
+    
+    # Navigate to the material path in the database
+    node = data
+    path_parts = material_path.split(' > ')
+    for part in path_parts:
+        if isinstance(node, dict) and part in node:
+            node = node[part]
+        else:
+            return None
+    return node
 
 def _get_all_variants(material_type: str, specific_type: Optional[str] = None) -> List[Dict[str, Any]]:
     """Loads all variants for a material, optionally filtered by a specific type."""
@@ -80,21 +100,74 @@ def _get_all_variants(material_type: str, specific_type: Optional[str] = None) -
     if not data: return []
     
     variants = []
-    target_data = data.get(specific_type, data) if specific_type else data
-
-    for parent_type, type_data in ([(specific_type, target_data)] if specific_type else target_data.items()):
-        if not isinstance(type_data, dict): continue
-        for variant_name, price_str in type_data.items():
-            try:
-                price_val = float(re.match(r'[\d,.]+', price_str.replace(',', '')).group(0))
-                variants.append({
-                    "material_type": material_type,
-                    "parent_type": parent_type,
-                    "variant": variant_name,
-                    "price": price_val
-                })
-            except (ValueError, AttributeError):
-                continue
+    
+    # If specific_type is provided, navigate to that level
+    if specific_type:
+        if specific_type in data and isinstance(data[specific_type], dict):
+            # Process variants under the specific type
+            for variant_name, price_info in data[specific_type].items():
+                # Handle both direct price strings and nested structures
+                if isinstance(price_info, str):
+                    try:
+                        price_val = float(re.match(r'[\d,.]+', price_info.replace(',', '')).group(0))
+                        variants.append({
+                            "parent_type": specific_type,
+                            "variant_name": variant_name,
+                            "price_str": price_info,
+                            "price_val": price_val
+                        })
+                    except (ValueError, AttributeError):
+                        logging.warning(f"Could not parse price for {specific_type}/{variant_name}: {price_info}")
+                        continue
+                elif isinstance(price_info, dict):
+                    # Handle nested structure with vat_tu and nhan_cong
+                    for price_type, price_str in price_info.items():
+                        try:
+                            price_val = float(re.match(r'[\d,.]+', price_str.replace(',', '')).group(0))
+                            variants.append({
+                                "parent_type": specific_type,
+                                "variant_name": f"{variant_name} ({price_type})",
+                                "price_str": price_str,
+                                "price_val": price_val
+                            })
+                        except (ValueError, AttributeError):
+                            logging.warning(f"Could not parse price for {specific_type}/{variant_name}/{price_type}: {price_str}")
+                            continue
+        else:
+            # If specific_type not found, return empty list
+            return []
+    else:
+        # Process all types and variants
+        for type_name, type_data in data.items():
+            if isinstance(type_data, dict):
+                for variant_name, price_info in type_data.items():
+                    # Handle both direct price strings and nested structures
+                    if isinstance(price_info, str):
+                        try:
+                            price_val = float(re.match(r'[\d,.]+', price_info.replace(',', '')).group(0))
+                            variants.append({
+                                "parent_type": type_name,
+                                "variant_name": variant_name,
+                                "price_str": price_info,
+                                "price_val": price_val
+                            })
+                        except (ValueError, AttributeError):
+                            logging.warning(f"Could not parse price for {type_name}/{variant_name}: {price_info}")
+                            continue
+                    elif isinstance(price_info, dict):
+                        # Handle nested structure with vat_tu and nhan_cong
+                        for price_type, price_str in price_info.items():
+                            try:
+                                price_val = float(re.match(r'[\d,.]+', price_str.replace(',', '')).group(0))
+                                variants.append({
+                                    "parent_type": type_name,
+                                    "variant_name": f"{variant_name} ({price_type})",
+                                    "price_str": price_str,
+                                    "price_val": price_val
+                                })
+                            except (ValueError, AttributeError):
+                                logging.warning(f"Could not parse price for {type_name}/{variant_name}/{price_type}: {price_str}")
+                                continue
     return variants
 
 # --- Quote Generation Logic ---
@@ -177,7 +250,31 @@ def generate_area_quote(components: List[Dict[str, Any]]) -> str:
     import json
     import logging
     import re
-    
+    from typing import List, Dict, Any
+    from .quote_parser import parse_area
+    from .database_utils import DATABASE
+
+    # Configure logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    # Map material types to database paths (new approach)
+    material_path_map = {
+        'gỗ': 'Nội thất',
+        'sắt': 'Nội thất',
+        'nhôm': 'Nội thất',
+        'kính': 'Nội thất',
+        'gạch': 'Sàn',
+        'sơn': 'Tường và vách',
+        'trần': 'Trần',
+        'sàn': 'Sàn',
+        'cửa': 'Cửa',
+        'tủ': 'Nội thất'
+    }
+
+    # Load the database once
+    data = DATABASE
+
     if not components:
         return "Không có hạng mục nào để báo giá."
     
@@ -235,9 +332,9 @@ def generate_area_quote(components: List[Dict[str, Any]]) -> str:
             })
             continue
             
-        # Tìm file dữ liệu giá
+        # Tìm đường dẫn trong cơ sở dữ liệu
         material_key = material_type.lower()
-        if material_key not in material_map:
+        if material_key not in VIETNAMESE_MATERIAL_MAP:
             logging.warning(f"Unsupported material type: {material_type}")
             results.append({
                 "material": material_type,
@@ -249,9 +346,10 @@ def generate_area_quote(components: List[Dict[str, Any]]) -> str:
             })
             continue
             
-        file_path = os.path.join(data_dir, f"{material_map[material_key]}.json")
-        if not os.path.exists(file_path):
-            logging.warning(f"Material data file not found: {file_path}")
+        # Lấy dữ liệu từ cơ sở dữ liệu thay vì file riêng lẻ
+        material_data = _load_material_data(material_type)
+        if not material_data:
+            logging.warning(f"Material data not found in database for: {material_type}")
             results.append({
                 "material": material_type,
                 "type": specific_type,
@@ -263,9 +361,8 @@ def generate_area_quote(components: List[Dict[str, Any]]) -> str:
             continue
             
         try:
-            # Đọc dữ liệu giá
-            with open(file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            # Sử dụng dữ liệu từ cơ sở dữ liệu
+            data = material_data
                 
             # Lọc theo loại cụ thể hoặc lấy tất cả
             price_data = {}
@@ -290,14 +387,24 @@ def generate_area_quote(components: List[Dict[str, Any]]) -> str:
             # Tính toán min/max/avg price
             all_prices = []
             for type_name, type_data in price_data.items():
-                for variant, price_str in type_data.items():
-                    # Parse giá từ chuỗi, giữ lại phần số và dấu phẩy
-                    price_match = re.search(r'([\d,\.]+)', price_str)
+                # Handle both direct price strings and nested structures
+                if isinstance(type_data, str):
+                    # Direct price string
+                    price_match = re.search(r'([\d,\.]+)', type_data)
                     if price_match:
                         numeric_str = price_match.group(1)
-                        # Chuyển đổi string thành số float (loại bỏ dấu phẩy hàng nghìn)
                         price_val = float(numeric_str.replace(',', ''))
-                        all_prices.append((type_name, variant, price_val, price_str))
+                        all_prices.append((type_name, type_name, price_val, type_data))
+                elif isinstance(type_data, dict):
+                    # Nested structure with vat_tu and nhan_cong
+                    for variant, price_str in type_data.items():
+                        # Parse giá từ chuỗi, giữ lại phần số và dấu phẩy
+                        price_match = re.search(r'([\d,\.]+)', price_str)
+                        if price_match:
+                            numeric_str = price_match.group(1)
+                            # Chuyển đổi string thành số float (loại bỏ dấu phẩy hàng nghìn)
+                            price_val = float(numeric_str.replace(',', ''))
+                            all_prices.append((type_name, variant, price_val, price_str))
             
             if not all_prices:
                 logging.warning(f"Could not parse any prices for {material_type}/{specific_type}")

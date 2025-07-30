@@ -1,407 +1,395 @@
 {
-  "Thi công nội thất":
-    {
-      "Sàn": {
-        "Sàn gạch": {
-          "Gạch cao cấp": {
-            "Gạch 600x1200mm": {
-              "Vật tư": 1500000
-            },
-            "Gạch 800x800mm": {
-              "Vật tư": 1500000
-            },
-            "Gạch 600x600mm": {
-              "Vật tư": 1400000
-            },
-            "Gạch 300x600mm": {
-              "Vật tư": 1400000
-            },
-            "Gạch 300x300mm": {
-              "Vật tư": 1200000
-            }
-          },
-          "Gạch trung cấp": {
-            "Gạch 600x1200mm": {
-              "Vật tư": 570000
-            },
-            "Gạch 800x800mm": {
-              "Vật tư": 550000
-            },
-            "Gạch 600x600mm": {
-              "Vật tư": 450000
-            },
-            "Gạch 300x600mm": {
-              "Vật tư": 420000
-            },
-            "Gạch 300x300mm": {
-              "Vật tư": 400000
-            }
-          },
-          "Gạch thấp cấp": {
-            "Gạch 600x1200mm": {
-              "Vật tư": 420000
-            },
-            "Gạch 800x800mm": {
-              "Vật tư": 420000
-            },
-            "Gạch 600x600mm": {
-              "Vật tư": 280000
-            },
-            "Gạch 300x600mm": {
-              "Vật tư": 250000
-            },
-            "Gạch 300x300mm": {
-              "Vật tư": 22000
-            }
-          }
+  "Sàn": {
+    "Sàn gạch": {
+      "Gạch cao cấp": {
+        "Gạch 600x1200mm": {
+          "Vật tư": 1500000
         },
-        "Sàn gỗ": {
-          "Gỗ tự nhiên": {
-            "Gỗ Đỏ/Teak dài 450mm, rộng 120mm, dày 15mm": {
-              "Vật tư": 850000,
-              "Nhân công": 70000
-            },
-            "Gỗ Đỏ/Teak dài 900mm, rộng 90mm, dày 15mm": {
-              "Vật tư": 950000,
-              "Nhân công": 70000
-            },
-            "Gỗ Sồi/Ash dài 900mm, rộng 120mm, dày 15mm": {
-              "Vật tư": 1100000,
-              "Nhân công": 70000
-            },
-            "Gõ Sồi/Ash dài 900mm, rộng 90mm, dày 15mm": {
-              "Vật tư": 950000,
-              "Nhân công": 70000
-            }
-          },
-          "Gỗ engineer": {
-            "Sàn gỗ Engineer Teak, Veneer dày 3mm rộng 120mm, dày 15mm": {
-              "Vật tư": 1100000,
-              "Nhân công": 70000
-            },
-            "Sàn gỗ Engineer Ash/Sồi, Veneer dày 3mm rộng 120mm, dày 15mm": {
-              "Vật tư": 1250000,
-              "Nhân công": 70000
-            }
-          },
-          "Gỗ công nghiệp": {
-            "An Cường dày 8mm": {
-              "Vật tư": 346000,
-              "Nhân công": 35000
-            },
-            "Wilson dày 88mm": {
-              "Vật tư": 220000,
-              "Nhân công": 35000
-            },
-            "An Cường dày 1212mm": {
-              "Vật tư": 438000,
-              "Nhân công": 35000
-            },
-            "Wilson dày 12mm": {
-              "Vật tư": 283000,
-              "Nhân công": 35000
-            }
-          }
+        "Gạch 800x800mm": {
+          "Vật tư": 1500000
         },
-        "Sàn đá": {
-          "Đá Marble": {
-            "Vàng Ai Cập": {
-              "Vật tư": 1150000,
-              "Nhân công": 850000
-            },
-            "Đen tia chớp": {
-              "Vật tư": 1650000,
-              "Nhân công": 850000
-            },
-            "Moca cream": {
-              "Vật tư": 1850000,
-              "Nhân công": 850000
-            },
-            "Dark emperado": {
-              "Vật tư": 2150000,
-              "Nhân công": 850000
-            },
-            "Cream light": {
-              "Vật tư": 2150000,
-              "Nhân công": 850000
-            },
-            "Trắng vân gỗ": {
-              "Vật tư": 2150000,
-              "Nhân công": 850000
-            },
-            "Grey light": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            },
-            "Kem hoàng gia": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            },
-            "Volakas": {
-              "Vật tư": 2950000,
-              "Nhân công": 850000
-            }
-          },
-          "Đá Granite": {
-            "Traventine": {
-              "Vật tư": 2150000,
-              "Nhân công": 850000
-            },
-            "Thunder Gray": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            },
-            "Polaris": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            }
-          },
-          "Đá solid surface": {
-            "trơn hạt dày 12mm": {
-              "Vật tư": 4000000,
-              "Nhân công": 1000000
-            },
-            "tia chớp/ vân tự nhiên dày 12mm": {
-              "Vật tư": 3200000,
-              "Nhân công": 1000000
-            }
-          },
-          "Đá nung kết": {
-            "dày 15mm": {
-              "Vật tư": 1500000,
-              "Nhân công": 1000000
-            }
-          },
-          "Đá quartz": {
-            "(tên nhà cung cấp cao cấp) trơn/hạt dày 20mm": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            },
-            "(tên nhà cung cấp cao cấp) tia chớp vân mây dày 20mm": {
-              "Vật tư": 4150000,
-              "Nhân công": 850000
-            },
-            "Trung Quốc trơn dày 20mm": {
-              "Vật tư": 2650000,
-              "Nhân công": 850000
-            },
-            "Trung Quốc tia chớp vân mây dày 20mm": {
-              "Vật tư": 4150000,
-              "Nhân công": 850000
-            }
-          },
-          "Đá mài dày": {
-            "mài dày 20mm nội thất": {
-              "Vật tư": 700000,
-              "Nhân công": 600000
-            },
-            "mài dày 20mm sàn": {
-              "Vật tư": 650000,
-              "Nhân công": 550000
-            }
-          }
+        "Gạch 600x600mm": {
+          "Vật tư": 1400000
+        },
+        "Gạch 300x600mm": {
+          "Vật tư": 1400000
+        },
+        "Gạch 300x300mm": {
+          "Vật tư": 1200000
         }
       },
-      "Tường và vách": {
-        "Giấy dán tường": {
-          "Giấy dán tường Đạt Minh": {
-            "Vật tư": 1200000,
-            "Nhân công": 80000
+      "Gạch trung cấp": {
+        "Gạch 600x1200mm": {
+          "Vật tư": 570000
+        },
+        "Gạch 800x800mm": {
+          "Vật tư": 550000
+        },
+        "Gạch 600x600mm": {
+          "Vật tư": 450000
+        },
+        "Gạch 300x600mm": {
+          "Vật tư": 420000
+        },
+        "Gạch 300x300mm": {
+          "Vật tư": 400000
+        }
+      },
+      "Gạch thấp cấp": {
+        "Gạch 600x1200mm": {
+          "Vật tư": 420000
+        },
+        "Gạch 800x800mm": {
+          "Vật tư": 420000
+        },
+        "Gạch 600x600mm": {
+          "Vật tư": 280000
+        },
+        "Gạch 300x600mm": {
+          "Vật tư": 250000
+        },
+        "Gạch 300x300mm": {
+          "Vật tư": 22000
+        }
+      }
+    },
+    "Sàn gỗ": {
+      "Gỗ tự nhiên": {
+        "Gỗ Đỏ/Teak dài 450mm, rộng 120mm, dày 15mm": {
+          "Vật tư": 850000,
+          "Nhân công": 70000
+        },
+        "Gỗ Đỏ/Teak dài 900mm, rộng 90mm, dày 15mm": {
+          "Vật tư": 950000,
+          "Nhân công": 70000
+        },
+        "Gỗ Sồi/Ash dài 900mm, rộng 120mm, dày 15mm": {
+          "Vật tư": 1100000,
+          "Nhân công": 70000
+        },
+        "Gõ Sồi/Ash dài 900mm, rộng 90mm, dày 15mm": {
+          "Vật tư": 950000,
+          "Nhân công": 70000
+        }
+      },
+      "Gỗ engineer": {
+        "Sàn gỗ Engineer Teak, Veneer dày 3mm rộng 120mm, dày 15mm": {
+          "Vật tư": 1100000,
+          "Nhân công": 70000
+        },
+        "Sàn gỗ Engineer Ash/Sồi, Veneer dày 3mm rộng 120mm, dày 15mm": {
+          "Vật tư": 1250000,
+          "Nhân công": 70000
+        }
+      },
+      "Gỗ công nghiệp": {
+        "An Cường dày 8mm": {
+          "Vật tư": 346000,
+          "Nhân công": 35000
+        },
+        "Wilson dày 88mm": {
+          "Vật tư": 220000,
+          "Nhân công": 35000
+        },
+        "An Cường dày 1212mm": {
+          "Vật tư": 438000,
+          "Nhân công": 35000
+        },
+        "Wilson dày 12mm": {
+          "Vật tư": 283000,
+          "Nhân công": 35000
+        }
+      }
+    },
+    "Sàn đá": {
+      "Đá Marble": {
+        "Vàng Ai Cập": {
+          "Vật tư": 1150000,
+          "Nhân công": 850000
+        },
+        "Đen tia chớp": {
+          "Vật tư": 1650000,
+          "Nhân công": 850000
+        },
+        "Moca cream": {
+          "Vật tư": 1850000,
+          "Nhân công": 850000
+        },
+        "Dark emperado": {
+          "Vật tư": 2150000,
+          "Nhân công": 850000
+        },
+        "Cream light": {
+          "Vật tư": 2150000,
+          "Nhân công": 850000
+        },
+        "Trắng vân gỗ": {
+          "Vật tư": 2150000,
+          "Nhân công": 850000
+        },
+        "Grey light": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        },
+        "Kem hoàng gia": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        },
+        "Volakas": {
+          "Vật tư": 2950000,
+          "Nhân công": 850000
+        }
+      },
+      "Đá Granite": {
+        "Traventine": {
+          "Vật tư": 2150000,
+          "Nhân công": 850000
+        },
+        "Thunder Gray": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        },
+        "Polaris": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        }
+      },
+      "Đá solid surface": {
+        "trơn hạt dày 12mm": {
+          "Vật tư": 4000000,
+          "Nhân công": 1000000
+        },
+        "tia chớp/ vân tự nhiên dày 12mm": {
+          "Vật tư": 3200000,
+          "Nhân công": 1000000
+        }
+      },
+      "Đá nung kết": {
+        "dày 15mm": {
+          "Vật tư": 1500000,
+          "Nhân công": 1000000
+        }
+      },
+      "Đá quartz": {
+        "trơn/hạt dày 20mm": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        },
+        "tia chớp vân mây dày 20mm": {
+          "Vật tư": 4150000,
+          "Nhân công": 850000
+        },
+        "Trung Quốc trơn dày 20mm": {
+          "Vật tư": 2650000,
+          "Nhân công": 850000
+        },
+        "Trung Quốc tia chớp vân mây dày 20mm": {
+          "Vật tư": 4150000,
+          "Nhân công": 850000
+        }
+      },
+      "Đá mài dày": {
+        "mài dày 20mm nội thất": {
+          "Vật tư": 700000,
+          "Nhân công": 600000
+        },
+        "mài dày 20mm sàn": {
+          "Vật tư": 650000,
+          "Nhân công": 550000
+        }
+      }
+    }
+  },
+  "Tường và vách": {
+    "Sơn": {
+          "Sơn nước": {
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng ngoài trời": {
+              "Vật tư": 70000,
+              "Nhân công": 55000
+            },
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun  dòng cao cấp": {
+              "Vật tư": 65000,
+              "Nhân công": 50000
+            },
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun  dòng thường": {
+              "Vật tư": 50000,
+              "Nhân công": 50000
+            },
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện ICI Maxilite": {
+              "Vật tư": 40000,
+              "Nhân công": 50000
+            },
+            "Bã bột Việt Mỹ, 1 lớp sơn lót": {
+              "Vật tư": 30000,
+              "Nhân công": 30000
+            }
           },
-          "Giấy dán tường Nhật Bản": {
-            "Vật tư": 210000,
-            "Nhân công": 45000
-          },
-          "Giấy dán tường Hàn Quốc": {
-            "Vật tư": 105000,
-            "Nhân công": 25000
+          "Sơn nước sơn lại trên nền đã có": {
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng cao cấp ngoài trời": {
+              "Vật tư": 75000,
+              "Nhân công": 30000
+            },
+            "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng thường ngoài trời": {
+              "Vật tư": 70000,
+              "Nhân công": 30000
+            },
+            "Trám trét xử lý bề mặt, 2 lớp sơn hoàn thiện Dulux/Jotun dòng cao cấp": {
+              "Vật tư": 60000,
+              "Nhân công": 30000
+            },
+            "Trám trét xử lý bề mặt, 2 lớp sơn hoàn thiện Dulux/Jotun dòng thường": {
+              "Vật tư": 45000,
+              "Nhân công": 30000
+            },
+            "Trám trét xử lý bề mặt ,2 lớp sơn hoàn thiện ICI Maxilite": {
+              "Vật tư": 35000,
+              "Nhân công": 30000
+            }
           }
         },
-        "Vách thạch cao khung xương 75/76": {
-          "Vách 1 mặt 9mm": {
+    "Giấy dán tường": {
+      "Giấy dán tường Đạt Minh": {
+        "Vật tư": 1200000,
+        "Nhân công": 80000
+      },
+      "Giấy dán tường Nhật Bản": {
+        "Vật tư": 210000,
+        "Nhân công": 45000
+      },
+      "Giấy dán tường Hàn Quốc": {
+        "Vật tư": 105000,
+        "Nhân công": 25000
+      }
+    },
+    "Vách thạch cao khung xương 75/76": {
+      "Vách 1 mặt 9mm": {
+        "Vật tư": 130000,
+        "Nhân công": 90000
+      },
+      "Vách 1 mặt 12mm": {
+        "Vật tư": 160000,
+        "Nhân công": 90000
+      },
+      "Vách 1 mặt 9mm bo công": {
+        "Vật tư": 160000,
+        "Nhân công": 110000
+      },
+      "Vách 1 mặt 12mm bo công": {
+        "Vật tư": 200000,
+        "Nhân công": 110000
+      },
+      "Vách 2 mặt 9mm": {
+        "Vật tư": 175000,
+        "Nhân công": 100000
+      },
+      "Vách 2 mặt 12mm": {
+        "Vật tư": 235000,
+        "Nhân công": 100000
+      },
+      "Vách 2 mặt 9mm bo công": {
+        "Vật tư": 200000,
+        "Nhân công": 140000
+      }
+    },
+    "Vách kính cường lực": {
+      "Kính cường lực trong": {
+        "Malay trong 12 bo cong": {
+          "Vật tư": 1800000,
+          "Nhân công": 700000
+        },
+        "Malay trong 10 bo cong": {
+          "Vật tư": 1400000,
+          "Nhân công": 700000
+        },
+        "Malay trong 12": {
+          "Vật tư": 1150000,
+          "Nhân công": 400000
+        },
+        "Malay trong 10": {
+          "Vật tư": 650000,
+          "Nhân công": 300000
+        }
+      },
+      "Kính cường lực màu": {
+        "Malay màu 10 bo cong": {
+          "Vật tư": 1600000,
+          "Nhân công": 700000
+        },
+        "Malay màu 10": {
+          "Vật tư": 1250000,
+          "Nhân công": 400000
+        }
+      }
+    }
+  },
+  "Trần": {
+    "Trần thạch cao": {
+      "Khung xương M29": {
+        "tấm thạch cao 9mm": {
+          "Vật tư": 90000,
+          "Nhân công": 80000
+        },
+        "tấm thạch cao 12mm": {
+          "Vật tư": 120000,
+          "Nhân công": 80000
+        },
+        "tấm thạch cao chống ẩm 9mm": {
+          "Vật tư": 110000,
+          "Nhân công": 80000
+        },
+        "tấm thạch cao chống ẩm 12mm": {
+          "Vật tư": 140000,
+          "Nhân công": 80000
+        },
+        "Khung xương alpha": {
+          "tấm thạch cao 9mm": {
+            "Vật tư": 105000,
+            "Nhân công": 85000
+          },
+          "tấm thạch cao 12mm": {
+            "Vật tư": 135000,
+            "Nhân công": 85000
+          },
+          "tấm thạch cao chống ẩm 9mm": {
+            "Vật tư": 125000,
+            "Nhân công": 85000
+          },
+          "tấm thạch cao chống ẩm 12mm": {
+            "Vật tư": 155000,
+            "Nhân công": 85000
+          }
+        },
+        "Khung xương basi": {
+          "tấm thạch cao 9mm": {
             "Vật tư": 130000,
             "Nhân công": 90000
           },
-          "Vách 1 mặt 12mm": {
+          "tấm thạch cao 12mm": {
             "Vật tư": 160000,
             "Nhân công": 90000
           },
-          "Vách 1 mặt 9mm bo công": {
-            "Vật tư": 160000,
-            "Nhân công": 110000
+          "tấm thạch cao chống ẩm 9mm": {
+            "Vật tư": 150000,
+            "Nhân công": 90000
           },
-          "Vách 1 mặt 12mm bo công": {
-            "Vật tư": 200000,
-            "Nhân công": 110000
-          },
-          "Vách 2 mặt 9mm": {
-            "Vật tư": 175000,
-            "Nhân công": 100000
-          },
-          "Vách 2 mặt 12mm": {
-            "Vật tư": 235000,
-            "Nhân công": 100000
-          },
-          "Vách 2 mặt 9mm bo công": {
-            "Vật tư": 200000,
-            "Nhân công": 140000
-          }
-        },
-        "Vách kính cường lực": {
-          "Kính cường lực trong": {
-            "Malay trong 12 bo cong": {
-              "Vật tư": 1800000,
-              "Nhân công": 700000
-            },
-            "Malay trong 10 bo cong": {
-              "Vật tư": 1400000,
-              "Nhân công": 700000
-            },
-            "Malay trong 12": {
-              "Vật tư": 1150000,
-              "Nhân công": 400000
-            },
-            "Malay trong 10": {
-              "Vật tư": 650000,
-              "Nhân công": 300000
-            }
-          },
-          "Kính cường lực màu": {
-            "Malay màu 10 bo cong": {
-              "Vật tư": 1600000,
-              "Nhân công": 700000
-            },
-            "Malay màu 10": {
-              "Vật tư": 1250000,
-              "Nhân công": 400000
-            }
-          }
-        }
-      },
-      "Trần": {
-        "Trần thạch cao": {
-          "Khung xương M29": {
-            "tấm thạch cao 9mm": {
-              "Vật tư": 90000,
-              "Nhân công": 80000
-            },
-            "tấm thạch cao 12mm": {
-              "Vật tư": 120000,
-              "Nhân công": 80000
-            },
-            "tấm thạch cao chống ẩm 9mm": {
-              "Vật tư": 110000,
-              "Nhân công": 80000
-            },
-            "tấm thạch cao chống ẩm 12mm": {
-              "Vật tư": 140000,
-              "Nhân công": 80000
-            },
-            "Khung xương alpha": {
-              "tấm thạch cao 9mm": {
-                "Vật tư": 105000,
-                "Nhân công": 85000
-              },
-              "tấm thạch cao 12mm": {
-                "Vật tư": 135000,
-                "Nhân công": 85000
-              },
-              "tấm thạch cao chống ẩm 9mm": {
-                "Vật tư": 125000,
-                "Nhân công": 85000
-              },
-              "tấm thạch cao chống ẩm 12mm": {
-                "Vật tư": 155000,
-                "Nhân công": 85000
-              }
-            },
-            "Khung xương basi": {
-              "tấm thạch cao 9mm": {
-                "Vật tư": 130000,
-                "Nhân công": 90000
-              },
-              "tấm thạch cao 12mm": {
-                "Vật tư": 160000,
-                "Nhân công": 90000
-              },
-              "tấm thạch cao chống ẩm 9mm": {
-                "Vật tư": 150000,
-                "Nhân công": 90000
-              },
-              "tấm thạch cao chống ẩm 12mm": {
-                "Vật tư": 180000,
-                "Nhân công": 90000
-              }
-            }
-          },
-          "Nắp thăm trần thạch cao": {
-            "Nắp thăm trần thạch cao 500x500mm": {
-              "Vật tư": 500000
-            },
-            "Nắp thăm trần thạch cao 600x600mm": {
-              "Vật tư": 650000
-            }
-          }
-        }
-      },
-      "Cầu thang": {
-        "Ốp gỗ cầu thang": {
-          "Sàn gỗ Đỏ/Teak dày 20mm": {
-            "Vật tư": 2960000,
-            "Nhân công": 1130000
-          },
-          "Sàn gỗ Sồi/Ash dày 20mm": {
-            "Vật tư": 1550000,
-            "Nhân công": 1130000
-          }
-        }
-      },
-      "Sơn": {
-        "Sơn nước": {
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng ngoài trời": {
-            "Vật tư": 70000,
-            "Nhân công": 55000
-          },
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun  dòng cao cấp": {
-            "Vật tư": 65000,
-            "Nhân công": 50000
-          },
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun  dòng thường": {
-            "Vật tư": 50000,
-            "Nhân công": 50000
-          },
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện ICI Maxilite": {
-            "Vật tư": 40000,
-            "Nhân công": 50000
-          },
-          "Bã bột Việt Mỹ, 1 lớp sơn lót": {
-            "Vật tư": 30000,
-            "Nhân công": 30000
-          }
-        },
-        "Sơn nước sơn lại trên nền đã có": {
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng cao cấp ngoài trời": {
-            "Vật tư": 75000,
-            "Nhân công": 30000
-          },
-          "Bã bột Việt Mỹ, 1 lớp sơn lót, 2 lớp sơn hoàn thiện Dulux/Jotun dòng thường ngoài trời": {
-            "Vật tư": 70000,
-            "Nhân công": 30000
-          },
-          "Trám trét xử lý bề mặt, 2 lớp sơn hoàn thiện Dulux/Jotun dòng cao cấp": {
-            "Vật tư": 60000,
-            "Nhân công": 30000
-          },
-          "Trám trét xử lý bề mặt, 2 lớp sơn hoàn thiện Dulux/Jotun dòng thường": {
-            "Vật tư": 45000,
-            "Nhân công": 30000
-          },
-          "Trám trét xử lý bề mặt ,2 lớp sơn hoàn thiện ICI Maxilite": {
-            "Vật tư": 35000,
-            "Nhân công": 30000
+          "tấm thạch cao chống ẩm 12mm": {
+            "Vật tư": 180000,
+            "Nhân công": 90000
           }
         }
       }
     }
-  
+  },
+  "Cầu thang": {
+    "Ốp gỗ cầu thang": {
+      "Sàn gỗ Đỏ/Teak dày 20mm": {
+        "Vật tư": 2960000,
+        "Nhân công": 1130000
+      },
+      "Sàn gỗ Sồi/Ash dày 20mm": {
+        "Vật tư": 1550000,
+        "Nhân công": 1130000
+      }
+    }
+  }
 }

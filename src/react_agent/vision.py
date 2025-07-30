@@ -20,7 +20,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Initialize the Gemini Pro Vision model
-vision_model = genai.GenerativeModel('gemini-1.5-flash')
+vision_model = genai.GenerativeModel('gemini-2.5-flash')
 
 # Mặc định prompt cho phân tích hình ảnh
 # DEFAULT_VISION_PROMPT is now imported as VISION_PROMPT from prompts.py
