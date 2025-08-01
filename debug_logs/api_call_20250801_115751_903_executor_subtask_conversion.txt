@@ -1,0 +1,274 @@
+=== API CALL DEBUG LOG ===
+Timestamp: 2025-08-01 11:57:51.903401
+Node: executor_subtask_conversion
+File: debug_logs/api_call_20250801_115751_903_executor_subtask_conversion.txt
+
+=== PROMPT SENT TO API ===
+<system>
+You are an expert AI tool converter, specializing in transforming natural language subtasks into precise tool calls for interior design quotations.
+
+## Available Tools
+- get_internal_price_new: 
+    (Giá nội bộ) Tra cứu giá của một vật liệu cụ thể từ cơ sở dữ liệu mới của công ty.
+    Sử dụng khi người dùng hỏi giá trực tiếp cho một sản phẩm.
+
+    Args:
+        category: Danh mục (ví dụ: 'Sàn', 'Tường và vách')
+        material_type: Loại vật liệu (ví dụ: 'Sàn gạch', 'Giấy dán tường')
+        subtype: Phân loại (ví dụ: 'Gạch cao cấp', 'Giấy dán tường Đạt Minh')
+        variant: Biến thể cụ thể (ví dụ: 'Gạch 600x1200mm'). Nếu không có, trả về khoảng giá.
+        cost_type: Loại chi phí - 'material' (vật tư), 'labor' (nhân công), hoặc 'combined' (tổng hợp)
+    
+  Parameters: category: str, material_type: str, subtype: str, variant: Optional = None, cost_type: str = 'combined'
+- get_market_price_new: (Giá thị trường) Tìm kiếm giá thị trường của một vật liệu bằng Tavily Search API.
+  Parameters: material: str
+- get_saved_quotes_new: (Nội bộ) Lấy danh sách các báo giá đã lưu hoặc nội dung của một báo giá cụ thể.
+  Parameters: project_name: Optional = None
+- save_quote_to_file_new: (Nội bộ) Lưu một báo giá vào file với tên dự án được chỉ định.
+  Parameters: project_name: str, content: str
+- search_materials_new: 
+    (Tìm kiếm vật liệu) Tìm kiếm vật liệu theo tên trong cơ sở dữ liệu mới.
+    Sử dụng khi người dùng hỏi về một vật liệu nhưng không rõ danh mục cụ thể.
+
+    Args:
+        query: Từ khóa tìm kiếm
+    
+  Parameters: query: str
+- get_categories_new: (Danh mục) Lấy danh sách tất cả các danh mục vật liệu có sẵn trong cơ sở dữ liệu mới.
+  Parameters: 
+- get_material_types_new: 
+    (Loại vật liệu) Lấy danh sách các loại vật liệu trong một danh mục cụ thể.
+
+    Args:
+        category: Danh mục (ví dụ: 'Sàn', 'Tường và vách')
+    
+  Parameters: category: str
+- get_material_subtypes_new: 
+    (Phân loại vật liệu) Lấy danh sách các phân loại trong một loại vật liệu cụ thể.
+
+    Args:
+        category: Danh mục (ví dụ: 'Sàn')
+        material_type: Loại vật liệu (ví dụ: 'Sàn gạch')
+    
+  Parameters: category: str, material_type: str
+- get_material_price_ranges: 
+    (Material Price Ranges) Provide price ranges for materials based on area information.
+    Use when user wants to know price ranges without specific budget constraints.
+
+    Args:
+        room_size: Room dimensions (optional) - format: "length x width x height" e.g.: "5x10x6"
+        area: Area (optional) - e.g.: "20", "5x4" - use only when room_size not available
+        surfaces: List of surfaces (optional) - each surface has position (required), category (required), material_type (if available), subtype (if available), area
+    
+  Parameters: room_size: str = None, area: str = None, surfaces: List = None
+- generate_quote_from_image: 
+    (Phân tích ảnh) Phân tích báo cáo hình ảnh và tạo báo giá sơ bộ.
+    Sử dụng khi người dùng cung cấp hình ảnh.
+
+    Args:
+        image_report: Báo cáo phân tích hình ảnh
+        area_map: Bản đồ diện tích đã được phân tích (nếu có)
+    
+  Parameters: image_report: str, area_map: dict = None
+- propose_options_for_budget: 
+    (Budget-Based Proposals) Suggest material options that fit within budget and area constraints.
+    Use ONLY when user provides budget AND area information (specific area or room dimensions).
+
+    Args:
+        budget: Budget amount (e.g.: 5000000)
+        room_size: Room dimensions (e.g.: "5x10x6" for length x width x height)
+        area: Area (e.g.: "20", "5x4") - if room_size not available
+        surfaces: List of surfaces with position, category, material_type, area
+    
+  Parameters: budget: float, room_size: str = None, area: str = None, surfaces: List = None
+
+## Subtask to Convert
+Step 1: Propose material options suitable for budget 300 million for surfaces: sàn (Sàn - Sàn gỗ, 64m²), trần (Trần - Trần thạch cao, 64m²), tường (Tường và vách - Sơn, 224m²)
+
+## Context from Previous Steps (if any)
+No context available
+
+## Previous Results (if any)
+[]
+
+## ADVANCED MAPPING GUIDELINES
+
+### 1. PARAMETER MAPPING RULES (CRITICAL)
+
+#### Vietnamese Parameter Values (ALWAYS USE THESE):
+- **category:** "Sàn", "Tường và vách", "Trần", "Cầu thang"
+- **material_type:** "Sàn gạch", "Sàn gỗ", "Sàn đá", "Sơn", "Giấy dán tường", "Vách thạch cao khung xương 75/76", "Vách kính cường lực", "Trần thạch cao", "Ốp gỗ cầu thang"
+- **position:** "sàn", "trần", "tường trái", "tường phải", "tường đối diện", "tường sau lưng"
+
+#### English to Vietnamese Mapping:
+- Floor/floor → "Sàn"
+- Walls/walls → "Tường và vách"  
+- Ceiling/ceiling → "Trần"
+- Stairs → "Cầu thang"
+- Wood flooring → "Sàn gỗ"
+- Tile flooring → "Sàn gạch"
+- Stone flooring → "Sàn đá"
+- Paint → "Sơn"
+- Wallpaper → "Giấy dán tường"
+- Gypsum wall → "Vách thạch cao khung xương 75/76"
+- Glass wall → "Vách kính cường lực"
+- Gypsum ceiling → "Trần thạch cao"
+- Stair wood cladding → "Ốp gỗ cầu thang"
+
+### 2. Function Analysis (CRITICAL PRIORITY ORDER):
+- **"Propose material options"** → propose_options_for_budget (ONLY when budget + surfaces exist)
+- **"Provide material price ranges"** → get_material_price_ranges (surfaces exist, NO budget)
+- **"Query internal price"** → get_internal_price_new
+- **"Search materials"** → search_materials_new  
+- **"Get categories"** → get_categories_new
+- **"Get material types"** → get_material_types_new
+- **"Get subtypes"** → get_material_subtypes_new
+- **"Search market price"** → get_market_price_new
+- **"Get saved quotes"** → get_saved_quotes_new
+- **"Save quote"** → save_quote_to_file_new
+
+### 3. Complex Surface Processing:
+- If subtask contains format "position (category - material_type - subtype, area)", auto-parse to surfaces array
+- Example: "sàn (Sàn - Sàn gỗ, 24m²)" → {"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 24}
+- **ALWAYS convert English terms to Vietnamese using mapping above**
+
+### 4. Budget Processing:
+- Auto-convert: "300 triệu" → 300000000, "300 million" → 300000000
+- "50 nghìn" → 50000, "2 tỷ" → 2000000000
+
+### 5. Validation:
+- Only map when sufficient information is available
+- If missing critical information, return {"error": "Missing information X"}
+- **NEVER use English parameter values**
+
+## MAPPING EXAMPLES
+
+### Example 1: Budget Proposal with Complex Surfaces
+Input: "Propose material options suitable for budget 300 million for surfaces: sàn (Sàn - Sàn gỗ, 24m²), trần (Trần - Trần thạch cao, 24m²)"
+Output:
+```json
+{
+  "name": "propose_options_for_budget",
+  "args": {
+    "budget": 300000000,
+    "surfaces": [
+      {"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 24},
+      {"position": "trần", "category": "Trần", "material_type": "Trần thạch cao", "area": 24}
+    ]
+  }
+}
+```
+
+### Example 2: Price Ranges (No Budget)
+Input: "Provide material price ranges for surfaces: sàn (Sàn - Sàn gỗ, 30m²), trần (Trần - Trần thạch cao, 30m²)"
+Output:
+```json
+{
+  "name": "get_material_price_ranges",
+  "args": {
+    "surfaces": [
+      {"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 30},
+      {"position": "trần", "category": "Trần", "material_type": "Trần thạch cao", "area": 30}
+    ]
+  }
+}
+```
+
+### Example 3: Simple Price Query
+Input: "Query internal prices for Sàn - Sàn gỗ"
+Output:
+```json
+{
+  "name": "get_internal_price_new",
+  "args": {
+    "category": "Sàn",
+    "material_type": "Sàn gỗ"
+  }
+}
+```
+
+### Example 4: Material Search
+Input: "Search materials with keyword 'gỗ'"
+Output:
+```json
+{
+  "name": "search_materials_new",
+  "args": {
+    "query": "gỗ"
+  }
+}
+```
+
+### Example 5: Market Price Search
+Input: "Search market price for 'vách ốp đá'"
+Output:
+```json
+{
+  "name": "get_market_price_new",
+  "args": {
+    "material": "vách ốp đá"
+  }
+}
+```
+
+### Example 6: Get Categories
+Input: "Get all available material categories"
+Output:
+```json
+{
+  "name": "get_categories_new",
+  "args": {}
+}
+```
+
+## CRITICAL NOTES
+- ALWAYS return valid JSON
+- DO NOT fabricate information not in subtask
+- PRIORITIZE accuracy over completeness
+- If uncertain, return {"error": "Cannot determine appropriate tool"}
+/no_think
+Analyze the subtask and return the appropriate JSON tool call:
+</system>
+
+=== RESPONSE FROM API ===
+<think>
+
+</think>
+
+```json
+{
+  "name": "propose_options_for_budget",
+  "args": {
+    "budget": 300000000,
+    "surfaces": [
+      {
+        "position": "sàn",
+        "category": "Sàn",
+        "material_type": "Sàn gỗ",
+        "area": 64
+      },
+      {
+        "position": "trần",
+        "category": "Trần",
+        "material_type": "Trần thạch cao",
+        "area": 64
+      },
+      {
+        "position": "tường",
+        "category": "Tường và vách",
+        "material_type": "Sơn",
+        "area": 224
+      }
+    ]
+  }
+}
+```
+
+=== ADDITIONAL INFO ===
+{
+  "subtask": "Step 1: Propose material options suitable for budget 300 million for surfaces: sàn (Sàn - Sàn gỗ, 64m²), trần (Trần - Trần thạch cao, 64m²), tường (Tường và vách - Sơn, 224m²)",
+  "previous_results_count": 0,
+  "context_keys": []
+}
+
+=== END DEBUG LOG ===

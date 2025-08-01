@@ -1,0 +1,89 @@
+=== STATE TRANSITION DEBUG LOG ===
+Timestamp: 2025-08-01 11:55:50.947843
+From: planner
+To: executor
+File: debug_logs/state_transition_20250801_115550_947_planner_to_executor.txt
+
+=== TRANSITION REASON ===
+Plan exists, executing tools
+
+=== STATE CONTENT ===
+{
+  "messages": [
+    {
+      "type": "human",
+      "content_length": 26
+    },
+    {
+      "type": "ai",
+      "content_length": 985
+    },
+    {
+      "type": "human",
+      "content_length": 98
+    }
+  ],
+  "history_summary": "[String with 1410 characters]",
+  "plan": [
+    "Step 1: Provide material price ranges for surfaces: sàn (Sàn - Sàn gỗ, 64m²), trần (Trần - Trần thạch cao, 64m²), tường (Tường và vách - Sơn, 224m²)"
+  ],
+  "area_map": {
+    "sàn": {
+      "position": "sàn",
+      "category": "Sàn",
+      "material_type": "Sàn gỗ",
+      "sub_type": null,
+      "variant": null,
+      "area": 64.0
+    },
+    "trần": {
+      "position": "trần",
+      "category": "Trần",
+      "material_type": "Trần thạch cao",
+      "sub_type": null,
+      "variant": null,
+      "area": 64.0
+    },
+    "tường trái": {
+      "position": "tường trái",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường phải": {
+      "position": "tường phải",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường đối diện": {
+      "position": "tường đối diện",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường sau lưng": {
+      "position": "tường sau lưng",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    }
+  },
+  "budget": null,
+  "events_summary": [
+    "Người dùng đã cung cấp kích thước phòng là 8x8x7",
+    "Người dùng yêu cầu thay thế vật liệu ốp tường đá bằng sơn",
+    "Hệ thống đã nhận diện sàn gỗ (có sẵn), trần thạch cao (có sẵn), và sơn (có sẵn)",
+    "Vật liệu tấm ốp tường đá không có sẵn trong cơ sở dữ liệu"
+  ]
+}
+
+=== END DEBUG LOG ===

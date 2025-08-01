@@ -41,29 +41,6 @@ def _log_debug_info(subtask: str, tools_description: str, tool_results: List[Any
     
     print(f"Debug info logged to: {filename}")
 
-def _convert_area_map_to_surfaces(area_map: Dict) -> List[Dict]:
-    """
-    Convert area_map from state to surfaces format for tools.
-    """
-    surfaces = []
-    if not area_map:
-        return surfaces
-        
-    for position, data in area_map.items():
-        if isinstance(data, dict):
-            surface = {
-                "position": data.get("position", position),
-                "category": data.get("category"),
-                "material_type": data.get("material_type"),
-                "subtype": data.get("sub_type"),  # Note: sub_type -> subtype
-                "area": data.get("area")
-            }
-            # Only add if has required fields
-            if surface["category"] and surface["area"]:
-                surfaces.append(surface)
-    
-    return surfaces
-
 def _parse_surfaces_from_step(subtask: str) -> List[Dict]:
     """
     Parse surfaces information from a complex step containing multiple surfaces.
@@ -184,74 +161,54 @@ async def _convert_subtask_to_tool_call(subtask: str, previous_results: List[Any
     
     # Enhanced prompt with better context handling
     prompt = f"""<system>
-You are an expert AI tool converter, specializing in transforming natural language subtasks into precise tool calls for interior design quotations.
+Bạn là một AI chuyên gia chuyển đổi các subtask bằng ngôn ngữ tự nhiên thành các lệnh gọi công cụ cụ thể.
 
-## Available Tools
+## Công cụ có sẵn
 {tools_description_str}
 
-## Subtask to Convert
+## Subtask cần chuyển đổi
 {subtask}
 
-## Context from Previous Steps (if any)
-{json.dumps(context, ensure_ascii=False, indent=2) if context else "No context available"}
+## Context từ các steps trước (nếu có)
+{json.dumps(context, ensure_ascii=False, indent=2) if context else "Không có context"}
 
-## Previous Results (if any)
+## Previous results (nếu có)
 {json.dumps(previous_results[-3:] if previous_results else [], ensure_ascii=False, indent=2)}
 
-## ADVANCED MAPPING GUIDELINES
+## HƯỚNG DẪN MAPPING NÂNG CAO
 
-### 1. PARAMETER MAPPING RULES (CRITICAL)
+### 1. Phân tích chức năng chính:
+- **"Tra cứu giá nội bộ"** → get_internal_price_new
+- **"Tìm kiếm vật liệu"** → search_materials_new  
+- **"Lấy danh mục"** → get_categories_new
+- **"Lấy loại vật liệu"** → get_material_types_new
+- **"Lấy phân loại"** → get_material_subtypes_new
+- **"Tra cứu giá thị trường"** → get_market_price_new
+- **"Đề xuất phương án vật liệu phù hợp với ngân sách"** → propose_options_for_budget
+- **"Cung cấp khoảng giá vật liệu"** → get_material_price_ranges
+- **"Lấy báo giá đã lưu"** → get_saved_quotes_new
+- **"Lưu báo giá"** → save_quote_to_file_new
 
-#### Vietnamese Parameter Values (ALWAYS USE THESE):
-- **category:** "Sàn", "Tường và vách", "Trần", "Cầu thang"
-- **material_type:** "Sàn gạch", "Sàn gỗ", "Sàn đá", "Sơn", "Giấy dán tường", "Vách thạch cao khung xương 75/76", "Vách kính cường lực", "Trần thạch cao", "Ốp gỗ cầu thang"
-- **position:** "sàn", "trần", "tường trái", "tường phải", "tường đối diện", "tường sau lưng"
+### 2. Xử lý surfaces phức tạp:
+- Nếu subtask chứa format "position (category - material_type - subtype, area)", tự động parse thành surfaces array
+- Ví dụ: "sàn (Sàn - Sàn gỗ, 24m²)" → {{"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 24}}
 
-#### English to Vietnamese Mapping:
-- Floor/floor → "Sàn"
-- Walls/walls → "Tường và vách"  
-- Ceiling/ceiling → "Trần"
-- Stairs → "Cầu thang"
-- Wood flooring → "Sàn gỗ"
-- Tile flooring → "Sàn gạch"
-- Stone flooring → "Sàn đá"
-- Paint → "Sơn"
-- Wallpaper → "Giấy dán tường"
-- Gypsum wall → "Vách thạch cao khung xương 75/76"
-- Glass wall → "Vách kính cường lực"
-- Gypsum ceiling → "Trần thạch cao"
-- Stair wood cladding → "Ốp gỗ cầu thang"
+### 3. Xử lý dependencies:
+- Nếu subtask nhắc đến "step X", "kết quả step Y", tìm trong previous_results
+- Nếu subtask yêu cầu "so sánh", "tổng hợp", sử dụng dữ liệu từ context
 
-### 2. Function Analysis (CRITICAL PRIORITY ORDER):
-- **"Propose material options"** → propose_options_for_budget (ONLY when budget + surfaces exist)
-- **"Provide material price ranges"** → get_material_price_ranges (surfaces exist, NO budget)
-- **"Query internal price"** → get_internal_price_new
-- **"Search materials"** → search_materials_new  
-- **"Get categories"** → get_categories_new
-- **"Get material types"** → get_material_types_new
-- **"Get subtypes"** → get_material_subtypes_new
-- **"Search market price"** → get_market_price_new
-- **"Get saved quotes"** → get_saved_quotes_new
-- **"Save quote"** → save_quote_to_file_new
-
-### 3. Complex Surface Processing:
-- If subtask contains format "position (category - material_type - subtype, area)", auto-parse to surfaces array
-- Example: "sàn (Sàn - Sàn gỗ, 24m²)" → {{"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 24}}
-- **ALWAYS convert English terms to Vietnamese using mapping above**
-
-### 4. Budget Processing:
-- Auto-convert: "300 triệu" → 300000000, "300 million" → 300000000
+### 4. Xử lý ngân sách:
+- Tự động chuyển đổi: "300 triệu" → 300000000
 - "50 nghìn" → 50000, "2 tỷ" → 2000000000
 
 ### 5. Validation:
-- Only map when sufficient information is available
-- If missing critical information, return {{"error": "Missing information X"}}
-- **NEVER use English parameter values**
+- Chỉ mapping khi đủ thông tin cần thiết
+- Nếu thiếu thông tin quan trọng, trả về {{"error": "Thiếu thông tin X"}}
 
-## MAPPING EXAMPLES
+## VÍ DỤ MAPPING
 
-### Example 1: Budget Proposal with Complex Surfaces
-Input: "Propose material options suitable for budget 300 million for surfaces: sàn (Sàn - Sàn gỗ, 24m²), trần (Trần - Trần thạch cao, 24m²)"
+### Ví dụ 1: Đề xuất với surfaces phức tạp
+Input: "Đề xuất phương án vật liệu phù hợp với ngân sách 300 triệu cho sàn (Sàn - Sàn gỗ, 24m²), trần (Trần - Trần thạch cao, 24m²)"
 Output:
 ```json
 {{
@@ -266,23 +223,8 @@ Output:
 }}
 ```
 
-### Example 2: Price Ranges (No Budget)
-Input: "Provide material price ranges for surfaces: sàn (Sàn - Sàn gỗ, 30m²), trần (Trần - Trần thạch cao, 30m²)"
-Output:
-```json
-{{
-  "name": "get_material_price_ranges",
-  "args": {{
-    "surfaces": [
-      {{"position": "sàn", "category": "Sàn", "material_type": "Sàn gỗ", "area": 30}},
-      {{"position": "trần", "category": "Trần", "material_type": "Trần thạch cao", "area": 30}}
-    ]
-  }}
-}}
-```
-
-### Example 3: Simple Price Query
-Input: "Query internal prices for Sàn - Sàn gỗ"
+### Ví dụ 2: Tra cứu giá đơn giản
+Input: "Tra cứu giá nội bộ cho Sàn - Sàn gỗ"
 Output:
 ```json
 {{
@@ -294,47 +236,25 @@ Output:
 }}
 ```
 
-### Example 4: Material Search
-Input: "Search materials with keyword 'gỗ'"
+### Ví dụ 3: Tổng hợp với context
+Input: "Tổng hợp kết quả từ step 1 và step 2"
 Output:
 ```json
 {{
-  "name": "search_materials_new",
+  "name": "summarize_results",
   "args": {{
-    "query": "gỗ"
+    "previous_results": [<data từ step 1>, <data từ step 2>]
   }}
 }}
 ```
 
-### Example 5: Market Price Search
-Input: "Search market price for 'vách ốp đá'"
-Output:
-```json
-{{
-  "name": "get_market_price_new",
-  "args": {{
-    "material": "vách ốp đá"
-  }}
-}}
-```
+## LƯU Ý QUAN TRỌNG
+- LUÔN trả về JSON hợp lệ
+- KHÔNG bịa thông tin không có trong subtask
+- ƯU TIÊN độ chính xác hơn độ đầy đủ
+- Nếu không chắc chắn, trả về {{"error": "Không thể xác định tool phù hợp"}}
 
-### Example 6: Get Categories
-Input: "Get all available material categories"
-Output:
-```json
-{{
-  "name": "get_categories_new",
-  "args": {{}}
-}}
-```
-
-## CRITICAL NOTES
-- ALWAYS return valid JSON
-- DO NOT fabricate information not in subtask
-- PRIORITIZE accuracy over completeness
-- If uncertain, return {{"error": "Cannot determine appropriate tool"}}
-/no_think
-Analyze the subtask and return the appropriate JSON tool call:
+Hãy phân tích subtask và trả về JSON tool call phù hợp:
 </system>"""
     
     llm = MODELS["LLM_PLANNER"]
@@ -392,10 +312,6 @@ Analyze the subtask and return the appropriate JSON tool call:
                 surfaces = _parse_surfaces_from_step(subtask)
                 budget = _extract_budget_from_step(subtask)
                 
-                # Also try to get surfaces from context (area_map)
-                if not surfaces and context and "area_map" in context:
-                    surfaces = _convert_area_map_to_surfaces(context["area_map"])
-                
                 if surfaces and budget:
                     response_dict["args"] = {
                         "budget": budget,
@@ -406,11 +322,6 @@ Analyze the subtask and return the appropriate JSON tool call:
             # Auto-parse surfaces for price ranges
             if "surfaces" not in response_dict.get("args", {}):
                 surfaces = _parse_surfaces_from_step(subtask)
-                
-                # Also try to get surfaces from context (area_map)
-                if not surfaces and context and "area_map" in context:
-                    surfaces = _convert_area_map_to_surfaces(context["area_map"])
-                    
                 if surfaces:
                     response_dict["args"] = {"surfaces": surfaces}
         

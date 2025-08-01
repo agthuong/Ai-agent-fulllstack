@@ -53,3 +53,16 @@ class State(TypedDict):
 
     # A map of surfaces to their areas, persisted across turns
     area_map: Optional[Dict[str, Any]]
+    quotes: Optional[List[Dict[str, Any]]]
+    
+    # User's budget for construction
+    budget: Optional[float]
+    
+    # Summary of important events in chronological order
+    events_summary: Optional[List[str]]
+    
+    # Reason for direct response (when no tools are executed)
+    response_reason: Optional[str]
+    
+    # Summary of tool execution results
+    execution_summary: Optional[str]

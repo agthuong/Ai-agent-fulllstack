@@ -10,7 +10,7 @@ from langgraph.config import get_config
 from langchain_core.messages import AIMessage, SystemMessage, HumanMessage, BaseMessage
 from langgraph.checkpoint.base import BaseCheckpointSaver
 
-from react_agent import prompts
+from . import prompts
 
 
 @dataclass

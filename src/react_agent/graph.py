@@ -14,6 +14,7 @@ from .agents.planner import history_summarizer_node, planner_node
 from .agents.executor import executor_node
 from .agents.responder import responder_node
 from .new_tools import execute_tool
+from .debug_utils import log_state_transition
 
 def should_execute_tools(state: State) -> Literal["executor", "responder"]:
     """Conditional edge based on the plan."""
@@ -21,8 +22,22 @@ def should_execute_tools(state: State) -> Literal["executor", "responder"]:
     plan = state.get("plan")
     if plan is not None and plan != []:
         print("Decision: Execute tools.")
+        # Log state transition
+        log_state_transition(
+            from_node="planner",
+            to_node="executor",
+            state=state,
+            transition_reason="Plan exists, executing tools"
+        )
         return "executor"
     print("Decision: Generate final response.")
+    # Log state transition
+    log_state_transition(
+        from_node="planner",
+        to_node="responder",
+        state=state,
+        transition_reason="No plan, generating direct response"
+    )
     return "responder"
 
 def create_graph():

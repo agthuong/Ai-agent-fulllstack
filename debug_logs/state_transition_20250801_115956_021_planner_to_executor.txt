@@ -1,0 +1,53 @@
+=== STATE TRANSITION DEBUG LOG ===
+Timestamp: 2025-08-01 11:59:56.021738
+From: planner
+To: executor
+File: debug_logs/state_transition_20250801_115956_021_planner_to_executor.txt
+
+=== TRANSITION REASON ===
+Plan exists, executing tools
+
+=== STATE CONTENT ===
+{
+  "messages": [
+    {
+      "type": "human",
+      "content_length": 98
+    },
+    {
+      "type": "system",
+      "content_length": 941
+    }
+  ],
+  "history_summary": "<think>\n\n</think>\n\n{\n  \"events_summary\": [\n    \"Người dùng đã cung cấp ngân sách 300 triệu cho việc thi công\",\n    \"Người dùng đã cung cấp kích thước phòng 8x7x6\",\n    \"Hệ thống đã nhận diện sàn gỗ (có sẵn), đá ốp tường (không có sẵn) và trần thạch cao (có sẵn)\",\n    \"Các vị trí tường trái, tường phải, tường đối diện và tường sau lưng đều không có sẵn vật liệu\"\n  ],\n  \"budget\": 300000000,\n  \"area_map\": [\n    {\n      \"position\": \"sàn\",\n      \"category\": \"Sàn\",\n      \"material_type\": \"Sàn gỗ\",\n      \"sub_type\": null,\n      \"variant\": null,\n      \"area\": 56.00\n    },\n    {\n      \"position\": \"trần\",\n      \"category\": \"Trần\",\n      \"material_type\": \"Trần thạch cao\",\n      \"sub_type\": null,\n      \"variant\": null,\n      \"area\": 56.00\n    }\n  ]\n}",
+  "plan": [
+    "Step 1: Propose material options suitable for budget 300 triệu cho surfaces: sàn (Sàn - Sàn gỗ, 56m²), trần (Trần - Trần thạch cao, 56m²)"
+  ],
+  "area_map": {
+    "sàn": {
+      "position": "sàn",
+      "category": "Sàn",
+      "material_type": "Sàn gỗ",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "trần": {
+      "position": "trần",
+      "category": "Trần",
+      "material_type": "Trần thạch cao",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    }
+  },
+  "budget": 300000000,
+  "events_summary": [
+    "Người dùng đã cung cấp ngân sách 300 triệu cho việc thi công",
+    "Người dùng đã cung cấp kích thước phòng 8x7x6",
+    "Hệ thống đã nhận diện sàn gỗ (có sẵn), đá ốp tường (không có sẵn) và trần thạch cao (có sẵn)",
+    "Các vị trí tường trái, tường phải, tường đối diện và tường sau lưng đều không có sẵn vật liệu"
+  ]
+}
+
+=== END DEBUG LOG ===

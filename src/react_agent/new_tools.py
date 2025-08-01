@@ -36,7 +36,7 @@ QUOTES_DIR = "saved_quotes"
 os.makedirs(QUOTES_DIR, exist_ok=True)
 
 @tool
-def get_internal_price_new(category: str, material_type: str, subtype: Optional[str] = None, variant: Optional[str] = None, cost_type: str = "combined") -> str:
+def get_internal_price_new(category: str, material_type: str, subtype: str, variant: Optional[str] = None, cost_type: str = "combined") -> str:
     """
     (Giá nội bộ) Tra cứu giá của một vật liệu cụ thể từ cơ sở dữ liệu mới của công ty.
     Sử dụng khi người dùng hỏi giá trực tiếp cho một sản phẩm.
@@ -44,7 +44,7 @@ def get_internal_price_new(category: str, material_type: str, subtype: Optional[
     Args:
         category: Danh mục (ví dụ: 'Sàn', 'Tường và vách')
         material_type: Loại vật liệu (ví dụ: 'Sàn gạch', 'Giấy dán tường')
-        subtype: Phân loại (ví dụ: 'Gạch cao cấp', 'Giấy dán tường Đạt Minh'). Có thể để trống để lấy khoảng giá cho tất cả các phân loại.
+        subtype: Phân loại (ví dụ: 'Gạch cao cấp', 'Giấy dán tường Đạt Minh')
         variant: Biến thể cụ thể (ví dụ: 'Gạch 600x1200mm'). Nếu không có, trả về khoảng giá.
         cost_type: Loại chi phí - 'material' (vật tư), 'labor' (nhân công), hoặc 'combined' (tổng hợp)
     """
@@ -58,20 +58,12 @@ def get_internal_price_new(category: str, material_type: str, subtype: Optional[
                 "combined": "tổng hợp"
             }.get(cost_type, "tổng hợp")
             
-            if subtype is not None:
-                return f"Giá {cost_type_vn} cho {variant} ({subtype}, {material_type}, {category}) của công ty DBplus là {price:,.0f} VND/m²."
-            else:
-                return f"Giá {cost_type_vn} cho {variant} ({material_type}, {category}) của công ty DBplus là {price:,.0f} VND/m²."
+            return f"Giá {cost_type_vn} cho {variant} ({subtype}, {material_type}, {category}) là {price:,.0f} VND/m²."
         else:
-            if subtype is not None:
-                return f"Không tìm thấy giá cho {variant} ({subtype}, {material_type}, {category})."
-            else:
-                return f"Không tìm thấy giá cho {variant} ({material_type}, {category})."
+            return f"Không tìm thấy giá cho {variant} ({subtype}, {material_type}, {category})."
     else:
         # Get price range for subtype
-        price_ranges = get_price_range(category, material_type, subtype)
-        min_price = price_ranges.get(f"{cost_type}_min")
-        max_price = price_ranges.get(f"{cost_type}_max")
+        min_price, max_price = get_price_range(category, material_type, subtype, cost_type)
         if min_price is not None and max_price is not None:
             cost_type_vn = {
                 "material": "vật tư",
@@ -79,15 +71,9 @@ def get_internal_price_new(category: str, material_type: str, subtype: Optional[
                 "combined": "tổng hợp"
             }.get(cost_type, "tổng hợp")
             
-            if subtype is not None:
-                return f"Giá {cost_type_vn} cho {subtype} ({material_type}, {category}) của công ty DBplus dao động từ {min_price:,.0f} VND/m² đến {max_price:,.0f} VND/m²."
-            else:
-                return f"Giá {cost_type_vn} cho {material_type} ({category}) của công ty DBplus dao động từ {min_price:,.0f} VND/m² đến {max_price:,.0f} VND/m²."
+            return f"Giá {cost_type_vn} cho {subtype} ({material_type}, {category}) dao động từ {min_price:,.0f} VND/m² đến {max_price:,.0f} VND/m²."
         else:
-            if subtype is not None:
-                return f"Không tìm thấy dữ liệu giá cho {subtype} ({material_type}, {category})."
-            else:
-                return f"Không tìm thấy dữ liệu giá cho {material_type} ({category})."
+            return f"Không tìm thấy dữ liệu giá cho {subtype} ({material_type}, {category})."
 
 @tool
 def search_materials_new(query: str) -> str:
@@ -278,30 +264,31 @@ def _parse_image_report_to_area_map(image_report: str) -> dict:
             subtype = item.get("subtype")
             in_stock = item.get("in_stock", "false").strip()
 
-            # Build the database path directly from the structured JSON data.
-            # We'll build a flexible path that can match varying database structures
-            path = []
-            if category:
-                path.append(category)
-            # If in_stock is 'only_material', set material_type to None as it's not in our catalog
-            if in_stock == 'only_material':
-                material_type = None
-            if material_type and material_type != 'null':
-                path.append(material_type)
-            if subtype and subtype != 'null':
-                path.append(subtype)
-            
-            # A valid path must have at least a category and a material type.
-            if len(path) >= 2:
-                surface_info = {
-                    "path": path,
-                    "in_stock": in_stock  # Include stock status for model to handle appropriately
-                }
-                # Only include area if it's explicitly provided in the image report
-                # If no area is provided, we'll show unit prices only
-                if "area" in item and item["area"] is not None:
-                    surface_info["area"] = item["area"]
-                surfaces[position] = surface_info
+            # Process only items that are available in our catalog.
+            if in_stock == 'true' or in_stock == 'only_material':
+                # Build the database path directly from the structured JSON data.
+                # We'll build a flexible path that can match varying database structures
+                path = []
+                if category:
+                    path.append(category)
+                # If in_stock is 'only_material', set material_type to None as it's not in our catalog
+                if in_stock == 'only_material':
+                    material_type = None
+                if material_type and material_type != 'null':
+                    path.append(material_type)
+                if subtype and subtype != 'null':
+                    path.append(subtype)
+                
+                # A valid path must have at least a category and a material type.
+                if len(path) >= 2:
+                    surface_info = {
+                        "path": path
+                    }
+                    # Only include area if it's explicitly provided in the image report
+                    # If no area is provided, we'll show unit prices only
+                    if "area" in item and item["area"] is not None:
+                        surface_info["area"] = item["area"]
+                    surfaces[position] = surface_info
     except (json.JSONDecodeError, TypeError):
         # If the report is not valid JSON, we cannot parse it.
         # This might happen if the vision model fails to follow instructions.
@@ -316,7 +303,6 @@ def _calculate_from_area_map_with_fallback(data, area_map):
     
     This function handles cases where the vision model provides incomplete paths
     (e.g., only category and material_type) by falling back to price range calculations.
-    It also handles stock information for unavailable materials.
     """
     from .database_utils import get_price_range
     from .tools_quotes import calculate_from_area_map, resolve_path, parse_area
@@ -326,32 +312,7 @@ def _calculate_from_area_map_with_fallback(data, area_map):
     
     # Check for errors and try to fix them with fallback logic
     for position, res in result["results"].items():
-        # Check if this position has stock information
-        area_info = area_map.get(position, {})
-        in_stock = area_info.get("in_stock", "true")
-        
-        # Handle materials that are not in stock
-        if in_stock == "false":
-            # Material not in our catalog at all
-            path = area_info.get("path", [])
-            path_str = " > ".join(path) if path else "Unknown path"
-            result["results"][position] = {
-                "path": path_str,
-                "area": area_info.get("area"),
-                "type": "unavailable",
-                "message": f"Vật liệu '{path_str}' không có trong kho dữ liệu của chúng tôi. Bạn có muốn xem giá ngoài thị trường không?"
-            }
-        elif in_stock == "only_material":
-            # General material recognized but not in our catalog
-            path = area_info.get("path", [])
-            path_str = " > ".join(path) if path else "Unknown path"
-            result["results"][position] = {
-                "path": path_str,
-                "area": area_info.get("area"),
-                "type": "unavailable",
-                "message": f"Vật liệu '{path_str}' không có trong kho dữ liệu của chúng tôi. Hệ thống nhận diện được loại vật liệu nhưng không tìm thấy trong danh mục. Bạn có muốn xem giá ngoài thị trường không?"
-            }
-        elif "error" in res and ("đường dẫn không tồn tại" in res["error"] or "Không tìm thấy đơn giá trong node đã chọn" in res["error"]):
+        if "error" in res and ("đường dẫn không tồn tại" in res["error"] or "Không tìm thấy đơn giá trong node đã chọn" in res["error"]):
             # Try to get price range for partial path
             path = res.get("path", "").split(" > ")
             if len(path) >= 2:  # At least category and material_type
@@ -421,11 +382,7 @@ def _format_quote_result(result: dict) -> str:
             path = res.get("path", "").split(" > ")
             material_name = path[-1] if path else "-"
             
-            if res["type"] == "unavailable":
-                # Handle unavailable materials
-                message = res.get("message", "Vật liệu không có sẵn trong kho dữ liệu.")
-                output += f"| {position} | {material_name} | {message} | |\n"
-            elif res["type"] == "specific":
+            if res["type"] == "specific":
                 unit_vt = res["unit_vattu"]
                 unit_nc = res["unit_nhancong"]
                 
@@ -487,11 +444,7 @@ def _format_quote_result(result: dict) -> str:
             
             area = res["area"]
             
-            if res["type"] == "unavailable":
-                # Handle unavailable materials
-                message = res.get("message", "Vật liệu không có sẵn trong kho dữ liệu.")
-                output += f"| {position} | {material_name} | {area} m² | {message} | | |\n"
-            elif res["type"] == "specific":
+            if res["type"] == "specific":
                 unit_vt = res["unit_vattu"]
                 unit_nc = res["unit_nhancong"]
                 total = res["total_cost"]
@@ -505,32 +458,9 @@ def _format_quote_result(result: dict) -> str:
                 else:
                     output += f"| {position} | {material_name} | {area} m² | {unit_vt:,.0f} VND/m² | {unit_nc:,.0f} VND/m² | {total:,.0f} VND |\n"
             elif res["type"] in ["range", "summary"]:
-                # For range/summary, show separate material and labor price ranges
-                material_min = res.get("material_min")
-                material_max = res.get("material_max")
-                labor_min = res.get("labor_min")
-                labor_max = res.get("labor_max")
+                # For range/summary, we'll show the range
                 range_text = res.get("total_cost_range", "N/A")
-                
-                # Format material price range
-                if material_min is not None and material_max is not None:
-                    if material_min == material_max:
-                        material_range = f"{material_min:,.0f} VND/m²"
-                    else:
-                        material_range = f"{material_min:,.0f} - {material_max:,.0f} VND/m²"
-                else:
-                    material_range = "-"
-                
-                # Format labor price range
-                if labor_min is not None and labor_max is not None:
-                    if labor_min == labor_max:
-                        labor_range = f"{labor_min:,.0f} VND/m²"
-                    else:
-                        labor_range = f"{labor_min:,.0f} - {labor_max:,.0f} VND/m²"
-                else:
-                    labor_range = "Chưa có giá nhân công"
-                
-                output += f"| {position} | {material_name} | {area} m² | {material_range} | {labor_range} | {range_text} |\n"
+                output += f"| {position} | {material_name} | {area} m² | - | - | {range_text} |\n"
                 
                 # Try to extract min/max for total calculation
                 try:
@@ -574,11 +504,7 @@ def _format_quote_result(result: dict) -> str:
             
             area = res["area"]
             
-            if res["type"] == "unavailable":
-                # Handle unavailable materials
-                message = res.get("message", "Vật liệu không có sẵn trong kho dữ liệu.")
-                output += f"| {position} | {material_name} | {area} m² | {message} | | |\n"
-            elif res["type"] == "specific":
+            if res["type"] == "specific":
                 unit_vt = res["unit_vattu"]
                 unit_nc = res["unit_nhancong"]
                 total = res["total_cost"]
@@ -612,21 +538,222 @@ def _format_quote_result(result: dict) -> str:
         return output
 
 @tool
-def propose_options_for_budget(budget: float, room_size: str = None, area: str = None) -> str:
+def get_material_price_ranges(room_size: str = None, area: str = None, surfaces: List[Dict] = None) -> str:
     """
-    (Đề xuất theo ngân sách) Đề xuất các phương án vật liệu phù hợp với ngân sách và diện tích.
-    Sử dụng khi người dùng cung cấp ngân sách và thông tin diện tích (diện tích cụ thể hoặc kích thước phòng).
+    (Material Price Ranges) Provide price ranges for materials based on area information.
+    Use when user wants to know price ranges without specific budget constraints.
 
     Args:
-        budget: Ngân sách (ví dụ: 5000000)
-        room_size: Kích thước phòng (ví dụ: "5x10x6" cho dài x rộng x cao)
-        area: Diện tích (ví dụ: "20", "5x4") - nếu không có room_size
+        room_size: Room dimensions (optional) - format: "length x width x height" e.g.: "5x10x6"
+        area: Area (optional) - e.g.: "20", "5x4" - use only when room_size not available
+        surfaces: List of surfaces (optional) - each surface has position (required), category (required), material_type (if available), subtype (if available), area
     """
-    print(f"--- INFO: Proposing options for budget {budget}, room_size {room_size}, area {area} ---")
+    from .database_utils import get_price_range
+    from .tools_quotes import parse_area
+    import logging
     
     try:
-        # Handle area extraction from either room_size or area parameter
-        if room_size:
+        # Standardize input
+        area_map = {"surfaces": {}}
+        if surfaces:
+            for i, surface in enumerate(surfaces):
+                position = surface.get("position", f"surface_{i}")
+                category = surface.get("category")
+                material_type = surface.get("material_type")
+                subtype = surface.get("subtype")
+                area_val = surface.get("area")
+                
+                # Standardize area - allow None for unit price only
+                parsed_area = None
+                if area_val is not None:
+                    try:
+                        parsed_area = float(area_val)
+                    except Exception:
+                        parsed_area = parse_area(str(area_val))
+                
+                # Check if we have minimum required info
+                if not category or not material_type:
+                    area_map["surfaces"][position] = {
+                        "error": f"Thiếu thông tin bắt buộc: category/material_type (category={category}, material_type={material_type})"
+                    }
+                    continue
+                
+                area_map["surfaces"][position] = {
+                    "category": category,
+                    "material_type": material_type,
+                    "subtype": subtype,
+                    "area": parsed_area
+                }
+        elif room_size:
+            from .room_parser import create_area_map_from_room_size
+            area_map_data = create_area_map_from_room_size(room_size)
+            area_map["surfaces"] = area_map_data["surfaces"]
+        elif area:
+            parsed_area = parse_area(area)
+            if parsed_area is None or parsed_area <= 0:
+                return "Lỗi: Không thể phân tích diện tích."
+            area_map["surfaces"] = {
+                "Sàn": {"category": "Sàn", "material_type": None, "subtype": None, "area": parsed_area},
+                "Tường": {"category": "Tường và vách", "material_type": None, "subtype": None, "area": parsed_area},
+                "Trần": {"category": "Trần", "material_type": None, "subtype": None, "area": parsed_area}
+            }
+        else:
+            return "Lỗi: Cần cung cấp thông tin diện tích (area), kích thước phòng (room_size), hoặc danh sách hạng mục (surfaces)"
+
+        # Calculate price ranges for each surface
+        result = {"surfaces": {}, "total_range": {"min": 0, "max": 0}}
+        total_min = 0
+        total_max = 0
+        has_area_info = False
+        
+        for position, info in area_map["surfaces"].items():
+            if "error" in info:
+                result["surfaces"][position] = {"error": info["error"]}
+                continue
+                
+            category = info.get("category")
+            material_type = info.get("material_type")
+            subtype = info.get("subtype")
+            area_val = info.get("area")
+            
+            # Get price range
+            price_range = get_price_range(category, material_type, subtype)
+            min_price = price_range.get("combined_min")
+            max_price = price_range.get("combined_max")
+            
+            # Log path and price
+            logging.info(f"[get_material_price_ranges] {position}: {category} - {material_type} - {subtype} | area={area_val} | min={min_price}, max={max_price}")
+            
+            if min_price is not None and max_price is not None and min_price > 0 and max_price > 0:
+                material_name = f"{material_type}"
+                if subtype:
+                    material_name += f" ({subtype})"
+                
+                if area_val is not None and area_val > 0:
+                    # Calculate total cost with area
+                    min_total = min_price * area_val
+                    max_total = max_price * area_val
+                    result["surfaces"][position] = {
+                        "category": category,
+                        "material_type": material_type,
+                        "subtype": subtype,
+                        "area": area_val,
+                        "unit_price_range": f"{min_price:,.0f} - {max_price:,.0f} VND/m²",
+                        "total_cost_range": f"{min_total:,.0f} - {max_total:,.0f} VND"
+                    }
+                    total_min += min_total
+                    total_max += max_total
+                    has_area_info = True
+                else:
+                    # Only show unit price when no area
+                    result["surfaces"][position] = {
+                        "category": category,
+                        "material_type": material_type,
+                        "subtype": subtype,
+                        "area": None,
+                        "unit_price_range": f"{min_price:,.0f} - {max_price:,.0f} VND/m²",
+                        "total_cost_range": "Cần diện tích để tính tổng chi phí"
+                    }
+            else:
+                result["surfaces"][position] = {
+                    "category": category,
+                    "material_type": material_type,
+                    "subtype": subtype,
+                    "area": area_val,
+                    "error": f"Không tìm thấy giá cho {category} - {material_type} - {subtype}"
+                }
+
+        result["total_range"] = {
+            "min": total_min,
+            "max": total_max,
+            "formatted": f"{total_min:,.0f} - {total_max:,.0f} VND" if has_area_info else "Cần diện tích để tính tổng chi phí"
+        }
+
+        # Format output
+        output = "# Khoảng Giá Vật Liệu\n\n"
+        
+        if has_area_info:
+            output += "| Vị trí | Vật liệu | Diện tích | Đơn giá | Tổng chi phí |\n"
+            output += "|--------|----------|-----------|---------|-------------|\n"
+        else:
+            output += "| Vị trí | Vật liệu | Đơn giá |\n"
+            output += "|--------|----------|---------|\n"
+        
+        for position, info in result["surfaces"].items():
+            if "error" in info:
+                if has_area_info:
+                    output += f"| {position} | - | - | - | {info['error']} |\n"
+                else:
+                    output += f"| {position} | - | {info['error']} |\n"
+            else:
+                material_name = f"{info['material_type']}"
+                if info.get('subtype'):
+                    material_name += f" ({info['subtype']})"
+                
+                if has_area_info:
+                    output += f"| {position} | {material_name} | {info['area']} m² | {info['unit_price_range']} | {info['total_cost_range']} |\n"
+                else:
+                    output += f"| {position} | {material_name} | {info['unit_price_range']} |\n"
+        
+        if has_area_info and total_min > 0 and total_max > 0:
+            output += f"\n**Tổng chi phí ước tính: {result['total_range']['formatted']}**\n"
+        elif not has_area_info:
+            output += f"\n**Lưu ý: Chỉ hiển thị đơn giá. Cần cung cấp diện tích để tính tổng chi phí.**\n"
+        
+        return output
+    except Exception as e:
+        error_msg = f"Lỗi khi thực thi công cụ 'get_material_price_ranges': {str(e)}"
+        print(error_msg)
+        return error_msg
+
+@tool
+def propose_options_for_budget(budget: float, room_size: str = None, area: str = None, surfaces: List[Dict] = None) -> str:
+    """
+    (Budget-Based Proposals) Suggest material options that fit within budget and area constraints.
+    Use ONLY when user provides budget AND area information (specific area or room dimensions).
+
+    Args:
+        budget: Budget amount (e.g.: 5000000)
+        room_size: Room dimensions (e.g.: "5x10x6" for length x width x height)
+        area: Area (e.g.: "20", "5x4") - if room_size not available
+        surfaces: List of surfaces with position, category, material_type, area
+    """
+    print(f"--- INFO: Proposing options for budget {budget}, room_size {room_size}, area {area}, surfaces {surfaces} ---")
+    
+    try:
+        # Handle surfaces parameter (highest priority)
+        if surfaces:
+            # Create area_map from surfaces
+            area_map = {
+                "total_budget": budget,
+                "surfaces": {}
+            }
+            
+            for i, surface in enumerate(surfaces):
+                position = surface.get("position", f"surface_{i}")
+                category = surface.get("category", "")
+                material_type = surface.get("material_type", "")
+                subtype = surface.get("subtype")
+                area_val = surface.get("area", "0")
+                
+                # Create path for surface
+                path = [category]
+                if material_type:
+                    path.append(material_type)
+                if subtype and subtype != "null":
+                    path.append(subtype)
+                
+                area_map["surfaces"][position] = {
+                    "path": path,
+                    "area": area_val  # Keep as float for consistency
+                }
+                
+                # If surface has individual budget
+                if "budget" in surface:
+                    area_map["surfaces"][position]["budget"] = surface["budget"]
+        
+        # Handle area extraction from either room_size or area parameter (fallback)
+        elif room_size:
             # Use room_parser to extract per-surface areas
             from .room_parser import create_area_map_from_room_size
             area_map_data = create_area_map_from_room_size(room_size)
@@ -656,7 +783,7 @@ def propose_options_for_budget(budget: float, room_size: str = None, area: str =
                 }
             }
         else:
-            return "Lỗi: Cần cung cấp thông tin diện tích (area) hoặc kích thước phòng (room_size)"
+            return "Lỗi: Cần cung cấp thông tin diện tích (area), kích thước phòng (room_size), hoặc danh sách hạng mục (surfaces)"
         
         # Use exhaustive search to find best variant for budget
         from .exhaustive_search import find_best_variant_for_budget
@@ -677,14 +804,15 @@ def propose_options_for_budget(budget: float, room_size: str = None, area: str =
 # --- Unified Tools List ---
 
 TOOLS = {
-    "get_internal_price": get_internal_price_new,
-    "get_market_price": get_market_price_new,
-    "get_saved_quotes": get_saved_quotes_new,
-    "save_quote_to_file": save_quote_to_file_new,
-    "search_materials": search_materials_new,
-    "get_categories": get_categories_new,
-    "get_material_types": get_material_types_new,
-    "get_material_subtypes": get_material_subtypes_new,
+    "get_internal_price_new": get_internal_price_new,
+    "get_market_price_new": get_market_price_new,
+    "get_saved_quotes_new": get_saved_quotes_new,
+    "save_quote_to_file_new": save_quote_to_file_new,
+    "search_materials_new": search_materials_new,
+    "get_categories_new": get_categories_new,
+    "get_material_types_new": get_material_types_new,
+    "get_material_subtypes_new": get_material_subtypes_new,
+    "get_material_price_ranges": get_material_price_ranges,
     "generate_quote_from_image": generate_quote_from_image,
     "propose_options_for_budget": propose_options_for_budget,
 }

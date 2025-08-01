@@ -1,0 +1,83 @@
+=== STATE TRANSITION DEBUG LOG ===
+Timestamp: 2025-08-01 11:50:27.604183
+From: planner
+To: responder
+File: debug_logs/state_transition_20250801_115027_603_planner_to_responder.txt
+
+=== TRANSITION REASON ===
+No plan, generating direct response
+
+=== STATE CONTENT ===
+{
+  "messages": [
+    {
+      "type": "human",
+      "content_length": 26
+    },
+    {
+      "type": "system",
+      "content_length": 912
+    }
+  ],
+  "history_summary": "[String with 1368 characters]",
+  "plan": [],
+  "area_map": {
+    "sàn": {
+      "position": "sàn",
+      "category": "Sàn",
+      "material_type": "Sàn đá",
+      "sub_type": "Đá Marble",
+      "variant": null,
+      "area": null
+    },
+    "tường trái": {
+      "position": "tường trái",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    },
+    "tường phải": {
+      "position": "tường phải",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    },
+    "tường đối diện": {
+      "position": "tường đối diện",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    },
+    "tường sau lưng (phán đoán)": {
+      "position": "tường sau lưng (phán đoán)",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    },
+    "trần": {
+      "position": "trần",
+      "category": "Trần",
+      "material_type": "Trần thạch cao",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    }
+  },
+  "budget": null,
+  "events_summary": [
+    "Người dùng đã cung cấp ảnh phòng với các bề mặt sàn, tường và trần",
+    "Hệ thống đã nhận diện sàn đá marble, tường sơn và trần thạch cao từ hình ảnh",
+    "Không có thông tin về kích thước phòng được cung cấp"
+  ],
+  "response_reason": "User missing room area/dimensions information for accurate quotation."
+}
+
+=== END DEBUG LOG ===

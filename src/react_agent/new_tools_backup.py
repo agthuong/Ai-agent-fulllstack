@@ -540,13 +540,13 @@ def _format_quote_result(result: dict) -> str:
 @tool
 def propose_options_for_budget(budget: float, room_size: str = None, area: str = None) -> str:
     """
-    (Đề xuất theo ngân sách) Đề xuất các phương án vật liệu phù hợp với ngân sách và diện tích.
-    Sử dụng khi người dùng cung cấp ngân sách và thông tin diện tích (diện tích cụ thể hoặc kích thước phòng).
+    (Budget-Based Proposals) Suggest material options that fit within budget and area constraints.
+    Use when user provides budget and area information (specific area or room dimensions).
 
     Args:
-        budget: Ngân sách (ví dụ: 5000000)
-        room_size: Kích thước phòng (ví dụ: "5x10x6" cho dài x rộng x cao)
-        area: Diện tích (ví dụ: "20", "5x4") - nếu không có room_size
+        budget: Budget amount (e.g.: 5000000)
+        room_size: Room dimensions (e.g.: "5x10x6" for length x width x height)
+        area: Area (e.g.: "20", "5x4") - if room_size not available
     """
     print(f"--- INFO: Proposing options for budget {budget}, room_size {room_size}, area {area} ---")
     

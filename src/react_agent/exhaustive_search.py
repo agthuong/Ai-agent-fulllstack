@@ -112,55 +112,88 @@ def find_best_variant_for_budget(
     budget: float
 ) -> Tuple[Dict, str]:
     """
-    Find the best variant that brings total cost closest to budget.
-    
-    Args:
-        data: Database dictionary
-        area_map: Area map with surface areas
-        budget: Target budget
-    
-    Returns:
-        Tuple of (result_dict, status_message)
+    Find the best combination of variants for all surfaces, respecting each surface's path prefix.
+    For each surface, only consider variants that match the provided path (category, material_type, subtype, variant).
     """
-    # Get all variant paths
-    variant_paths = get_all_variant_paths(data)
-    
-    if not variant_paths:
-        return None, "Không tìm thấy vật liệu phù hợp trong database"
-    
-    best_variant = None
+    from itertools import product
+
+    surfaces = area_map.get('surfaces', {})
+    if not surfaces:
+        return None, "Không có hạng mục nào để báo giá."
+
+    # For each surface, get all matching variant paths
+    surface_variants = {}
+    for position, surface in surfaces.items():
+        path_prefix = surface.get('path', [])
+        # Nếu user cung cấp đến variant (tức là path trỏ đến node có 'Vật tư'), chỉ lấy đúng path đó
+        node = data
+        is_variant = False
+        for part in path_prefix:
+            if isinstance(node, dict) and part in node:
+                node = node[part]
+            else:
+                node = None
+                break
+        if node and isinstance(node, dict) and 'Vật tư' in node:
+            # Đã đến variant cụ thể
+            surface_variants[position] = [path_prefix]
+            continue
+        # Nếu chưa đến variant, vét cạn các variant path bắt đầu bằng path_prefix
+        all_variants = get_all_variant_paths(data)
+        matching_variants = [p for p in all_variants if p[:len(path_prefix)] == path_prefix]
+        if not matching_variants:
+            return None, f"Không tìm thấy vật liệu phù hợp cho hạng mục '{position}' với path {path_prefix}"
+        surface_variants[position] = matching_variants
+
+    # Sinh tất cả tổ hợp variant cho các surfaces
+    all_positions = list(surface_variants.keys())
+    all_variant_lists = [surface_variants[pos] for pos in all_positions]
+    best_combo = None
     best_cost = float('inf')
     best_details = {}
     best_diff = float('inf')
-    
-    # Find variant with cost closest to budget
-    for path in variant_paths:
-        total_cost, surface_details = calculate_total_cost_for_variant(data, area_map, path)
-        
-        # Skip if calculation failed
+
+    for combo in product(*all_variant_lists):
+        total_cost = 0
+        details = {}
+        for idx, variant_path in enumerate(combo):
+            position = all_positions[idx]
+            surface = surfaces[position]
+            area = float(surface.get('area', 0))
+            variant_info = get_variant_info(data, variant_path)
+            if not variant_info:
+                total_cost = float('inf')
+                break
+            unit_vt = variant_info['unit_vattu']
+            unit_nc = variant_info['unit_nhancong']
+            surface_cost = (unit_vt + unit_nc) * area
+            total_cost += surface_cost
+            details[position] = {
+                'path': ' > '.join(variant_path),
+                'area': area,
+                'unit_vattu': unit_vt,
+                'unit_nhancong': unit_nc,
+                'total_cost': surface_cost,
+                'type': 'specific'
+            }
         if total_cost == float('inf'):
             continue
-        
-        # Calculate difference from budget
         diff = abs(total_cost - budget)
-        
-        # Prefer variants that are under budget, but if all are over, pick the closest
         if total_cost <= budget and diff < best_diff:
-            best_variant = path
+            best_combo = combo
             best_cost = total_cost
-            best_details = surface_details
+            best_details = details
             best_diff = diff
-        elif total_cost > budget and best_variant is None:  # All variants so far are over budget
+        elif total_cost > budget and best_combo is None:
             if diff < best_diff:
-                best_variant = path
+                best_combo = combo
                 best_cost = total_cost
-                best_details = surface_details
+                best_details = details
                 best_diff = diff
-    
-    if best_variant is None:
-        return None, "Không tìm được phương án phù hợp"
-    
-    # Create result structure
+
+    if not best_details:
+        return None, "Không tìm được phương án phù hợp với ngân sách."
+
     result = {
         "results": best_details,
         "summary": {
@@ -169,11 +202,8 @@ def find_best_variant_for_budget(
             "total_cost_max": best_cost
         }
     }
-    
-    # Add status
     if best_cost <= budget:
         result["summary"]["status"] = "Tổng chi phí NẰM TRONG ngân sách."
     else:
         result["summary"]["status"] = "Tổng chi phí VƯỢT ngân sách."
-    
     return result, "Thành công"

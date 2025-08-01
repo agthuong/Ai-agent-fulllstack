@@ -1,0 +1,97 @@
+=== STATE TRANSITION DEBUG LOG ===
+Timestamp: 2025-08-01 11:57:42.731567
+From: planner
+To: executor
+File: debug_logs/state_transition_20250801_115742_731_planner_to_executor.txt
+
+=== TRANSITION REASON ===
+Plan exists, executing tools
+
+=== STATE CONTENT ===
+{
+  "messages": [
+    {
+      "type": "human",
+      "content_length": 26
+    },
+    {
+      "type": "ai",
+      "content_length": 985
+    },
+    {
+      "type": "human",
+      "content_length": 98
+    },
+    {
+      "type": "ai",
+      "content_length": 1336
+    },
+    {
+      "type": "human",
+      "content_length": 56
+    }
+  ],
+  "history_summary": "[String with 2304 characters]",
+  "plan": [
+    "Step 1: Propose material options suitable for budget 300 million for surfaces: sàn (Sàn - Sàn gỗ, 64m²), trần (Trần - Trần thạch cao, 64m²), tường (Tường và vách - Sơn, 224m²)"
+  ],
+  "area_map": {
+    "sàn": {
+      "position": "sàn",
+      "category": "Sàn",
+      "material_type": "Sàn gỗ",
+      "sub_type": null,
+      "variant": null,
+      "area": 64.0
+    },
+    "trần": {
+      "position": "trần",
+      "category": "Trần",
+      "material_type": "Trần thạch cao",
+      "sub_type": null,
+      "variant": null,
+      "area": 64.0
+    },
+    "tường trái": {
+      "position": "tường trái",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường phải": {
+      "position": "tường phải",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường đối diện": {
+      "position": "tường đối diện",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    },
+    "tường sau lưng": {
+      "position": "tường sau lưng",
+      "category": "Tường và vách",
+      "material_type": "Sơn",
+      "sub_type": null,
+      "variant": null,
+      "area": 56.0
+    }
+  },
+  "budget": 300000000,
+  "events_summary": [
+    "Người dùng đã cung cấp kích thước phòng là 8x8x7",
+    "Hệ thống đã nhận diện sàn gỗ, trần thạch cao và sơn tường từ yêu cầu thay thế",
+    "Người dùng đã yêu cầu báo giá đầy đủ với ngân sách 300 triệu",
+    "Vật liệu 'tấm ốp tường đá' không có sẵn trong cơ sở dữ liệu DBplus"
+  ]
+}
+
+=== END DEBUG LOG ===

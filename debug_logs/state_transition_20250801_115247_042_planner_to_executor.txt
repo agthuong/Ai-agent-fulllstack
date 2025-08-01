@@ -1,0 +1,52 @@
+=== STATE TRANSITION DEBUG LOG ===
+Timestamp: 2025-08-01 11:52:47.042651
+From: planner
+To: executor
+File: debug_logs/state_transition_20250801_115247_042_planner_to_executor.txt
+
+=== TRANSITION REASON ===
+Plan exists, executing tools
+
+=== STATE CONTENT ===
+{
+  "messages": [
+    {
+      "type": "human",
+      "content_length": 26
+    },
+    {
+      "type": "system",
+      "content_length": 957
+    }
+  ],
+  "history_summary": "<think>\n\n</think>\n\n{\n  \"events_summary\": [\n    \"Người dùng đã cung cấp ảnh phòng với các vật liệu sàn gỗ và tấm ốp tường đá\",\n    \"Hệ thống đã nhận diện sàn gỗ (có sẵn), tấm ốp tường đá (không có sẵn) và trần thạch cao (có sẵn)\",\n    \"Không có thông tin về ngân sách hoặc kích thước phòng được cung cấp\"\n  ],\n  \"budget\": null,\n  \"area_map\": [\n    {\n      \"position\": \"sàn\",\n      \"category\": \"Sàn\",\n      \"material_type\": \"Sàn gỗ\",\n      \"sub_type\": null,\n      \"variant\": null,\n      \"area\": null\n    },\n    {\n      \"position\": \"trần\",\n      \"category\": \"Trần\",\n      \"material_type\": \"Trần thạch cao\",\n      \"sub_type\": null,\n      \"variant\": null,\n      \"area\": null\n    }\n  ]\n}",
+  "plan": [
+    "Step 1: Provide material price ranges for surfaces: sàn (Sàn - Sàn gỗ), trần (Trần - Trần thạch cao)"
+  ],
+  "area_map": {
+    "sàn": {
+      "position": "sàn",
+      "category": "Sàn",
+      "material_type": "Sàn gỗ",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    },
+    "trần": {
+      "position": "trần",
+      "category": "Trần",
+      "material_type": "Trần thạch cao",
+      "sub_type": null,
+      "variant": null,
+      "area": null
+    }
+  },
+  "budget": null,
+  "events_summary": [
+    "Người dùng đã cung cấp ảnh phòng với các vật liệu sàn gỗ và tấm ốp tường đá",
+    "Hệ thống đã nhận diện sàn gỗ (có sẵn), tấm ốp tường đá (không có sẵn) và trần thạch cao (có sẵn)",
+    "Không có thông tin về ngân sách hoặc kích thước phòng được cung cấp"
+  ]
+}
+
+=== END DEBUG LOG ===
